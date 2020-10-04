@@ -2,6 +2,7 @@ package shamir
 
 import (
 	"crypto/rand"
+	"github.com/google/uuid"
 	"math"
 	"math/big"
 )
@@ -9,27 +10,30 @@ import (
 const prime = 257
 
 type share struct {
-	shareIndex int
-	slices     []int
+	id         uuid.UUID
+	threshold  uint8
+	shareIndex uint16
+	slices     []uint16
 }
 type singleByteShare struct {
-	shareIndex int
-	share      int
+	shareIndex uint16
+	share      uint16
 }
 
-func SplitSecret(secret []byte, shares int, threshold int) ([]share, error) {
+func SplitSecret(secret []byte, shares int, threshold uint8) ([]share, error) {
 	//TODO: Assertions...
 
 	var sharedSecrets []share
-	var indices []int
+	var indices []uint16
 
 	// initialize indices
 	for i := 1; i <= shares; i++ {
-		indices = append(indices, i)
+		indices = append(indices, uint16(i))
 	}
 
 	// Split every byte
-	secretSharesMap := make(map[int][]int)
+	// index => bytes
+	secretSharesMap := make(map[uint16][]uint16)
 	for _, byte := range secret {
 		byteShares, err := splitByte(byte, shares, threshold, indices)
 		if err != nil {
@@ -44,8 +48,12 @@ func SplitSecret(secret []byte, shares int, threshold int) ([]share, error) {
 		}
 	}
 
+	// all Shares have the same UUID
+	uuid := uuid.New()
 	for index, bytes := range secretSharesMap {
 		sharedSecrets = append(sharedSecrets, share{
+			id:         uuid,
+			threshold:  threshold,
 			shareIndex: index,
 			slices:     bytes,
 		})
@@ -53,9 +61,9 @@ func SplitSecret(secret []byte, shares int, threshold int) ([]share, error) {
 	return sharedSecrets, nil
 }
 
-func splitByte(secretByte byte, shares int, threshold int, indices []int) ([]singleByteShare, error) {
+func splitByte(secretByte byte, shares int, threshold uint8, indices []uint16) ([]singleByteShare, error) {
 	// Create Polynomial, the constant term is the secret, the maximum degree is threshold - 1
-	polynom, err := buildRandomPolynomial(int(secretByte), threshold-1, prime)
+	polynom, err := buildRandomPolynomial(int(secretByte), int(threshold-1), prime)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +72,8 @@ func splitByte(secretByte byte, shares int, threshold int, indices []int) ([]sin
 		singleByteShares = append(
 			singleByteShares,
 			singleByteShare{
-				shareIndex: index,
-				share:      polynom(index),
+				shareIndex: uint16(index),
+				share:      uint16(polynom(index)),
 			})
 	}
 	return singleByteShares, nil
