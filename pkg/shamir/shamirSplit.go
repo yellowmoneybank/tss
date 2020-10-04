@@ -68,12 +68,12 @@ func splitByte(secretByte byte, shares int, threshold uint8, indices []uint16) (
 		return nil, err
 	}
 	var singleByteShares []singleByteShare
-	for index := range indices {
+	for _, index := range indices {
 		singleByteShares = append(
 			singleByteShares,
 			singleByteShare{
 				shareIndex: uint16(index),
-				share:      uint16(polynom(index)),
+				share:      uint16(polynom(int(index))),
 			})
 	}
 	return singleByteShares, nil
