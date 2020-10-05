@@ -53,7 +53,7 @@ func isUniqueSolution(byteShares []singleByteShare, threshold uint8) bool {
 
 	var indices []int
 	for _, byteshare := range byteShares {
-		indices := append(indices, int(byteshare.shareIndex))
+		indices = append(indices, int(byteshare.shareIndex))
 	}
 	// TODO check for all combinations
 	return !isDeterminantVandermondeZero(indices[:threshold])
@@ -79,28 +79,31 @@ type point struct {
 }
 
 // polynom interpolation a la Lagrange
-func reconstructPolynom(points []point) func(int) int {
-	return func(x int) int {
-		sum := 0
+func reconstructPolynom(points []point) func(int) float64 {
+	return func(x int) float64 {
+		sum := float64(0)
 		for i, point := range points {
-			basisPolynom := createBasisPolynom(points, i)
-			sum += point.y * basisPolynom(x)
+			basisPolynom := createBasisPolynomial(points, i)
+			sum += float64(point.y) * basisPolynom(x)
 		}
 		return sum
 	}
 }
 
-func createBasisPolynom(points []point, index int) func(int) int {
-	return func(x int) int {
-		basisPolynom := 1
+//
+func createBasisPolynomial(points []point, index int) func(int) float64 {
+	return func(x int) float64 {
+		dividend := 1
+		divisor := 1
 
 		for j, point := range points {
 			if j == index {
 				continue
 			}
-			basisPolynom *= (x - point.x) / (points[index].x - point.x)
-		}
-		return basisPolynom
-	}
+			dividend *= (x - point.x)
+			divisor *= points[index].x - point.x
 
+		}
+		return float64(dividend) / float64(divisor)
+	}
 }
