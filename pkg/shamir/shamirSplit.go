@@ -2,9 +2,11 @@ package shamir
 
 import (
 	"crypto/rand"
-	"github.com/google/uuid"
+	"fmt"
 	"math"
 	"math/big"
+
+	"github.com/google/uuid"
 )
 
 const prime = 257
@@ -15,6 +17,7 @@ type share struct {
 	shareIndex uint16
 	slices     []uint16
 }
+
 type singleByteShare struct {
 	shareIndex uint16
 	share      uint16
@@ -24,18 +27,12 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]share, error) {
 	//TODO: Assertions...
 
 	var sharedSecrets []share
-	var indices []uint16
 
-	// initialize indices
-	for i := 1; i <= shares; i++ {
-		indices = append(indices, uint16(i))
-	}
-
-	// Split every byte
+	// Split every secretByte
 	// index => bytes
 	secretSharesMap := make(map[uint16][]uint16)
-	for _, byte := range secret {
-		byteShares, err := splitByte(byte, shares, threshold, indices)
+	for _, secretByte := range secret {
+		byteShares, err := splitByte(secretByte, shares, threshold)
 		if err != nil {
 			return nil, err
 		}
@@ -49,10 +46,10 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]share, error) {
 	}
 
 	// all Shares have the same UUID
-	uuid := uuid.New()
+	uuId := uuid.New()
 	for index, bytes := range secretSharesMap {
 		sharedSecrets = append(sharedSecrets, share{
-			id:         uuid,
+			id:         uuId,
 			threshold:  threshold,
 			shareIndex: index,
 			slices:     bytes,
@@ -61,22 +58,39 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]share, error) {
 	return sharedSecrets, nil
 }
 
-func splitByte(secretByte byte, shares int, threshold uint8, indices []uint16) ([]singleByteShare, error) {
+func splitByte(secretByte byte, shares int, threshold uint8) ([]singleByteShare, error) {
 	// Create Polynomial, the constant term is the secret, the maximum degree is threshold - 1
-	polynom, err := buildRandomPolynomial(int(secretByte), int(threshold-1), prime)
+	polynomial, err := buildRandomPolynomial(int(secretByte), int(threshold-1), prime)
 	if err != nil {
 		return nil, err
 	}
+
+	// initialize indices
+	indices := createIndices(shares)
+
+	singleByteShares := createByteShares(indices, polynomial)
+	return singleByteShares, nil
+}
+
+func createIndices(indexCount int) []uint16 {
+	var indices []uint16
+	for i := 1; i <= indexCount; i++ {
+		indices = append(indices, uint16(i))
+	}
+	return indices
+}
+
+func createByteShares(indices []uint16, polynomial func(x int) int) []singleByteShare {
 	var singleByteShares []singleByteShare
 	for _, index := range indices {
 		singleByteShares = append(
 			singleByteShares,
 			singleByteShare{
-				shareIndex: uint16(index),
-				share:      uint16(polynom(int(index))),
+				shareIndex: index,
+				share:      uint16(polynomial(int(index))),
 			})
 	}
-	return singleByteShares, nil
+	return singleByteShares
 }
 
 // Builds a polynomial function with a maximum degree, random coefficients, a
@@ -84,7 +98,7 @@ func splitByte(secretByte byte, shares int, threshold uint8, indices []uint16) (
 func buildRandomPolynomial(constant, maxDegree, modulo int) (func(x int) int, error) {
 	// first coefficient is the secret
 	coefficients := []int{constant}
-	for i := 0; i < maxDegree-1; i++ {
+	for i := 0; i < maxDegree; i++ {
 		coefficient, err := rand.Int(rand.Reader, big.NewInt(prime))
 		if err != nil {
 			return nil, err
@@ -92,19 +106,24 @@ func buildRandomPolynomial(constant, maxDegree, modulo int) (func(x int) int, er
 
 		coefficients = append(coefficients, int(coefficient.Int64()))
 	}
-
-	return buildPolynomial(coefficients, prime), nil
+	// TODO REMOVE THIS
+	fmt.Println(coefficients)
+	polynomial, err := buildPolynomial(coefficients, modulo)
+	if err != nil {
+		return nil, err
+	}
+	return polynomial, nil
 }
 
 // Builds a polynomial function with given coefficients, and degree len(coefficients) + 1
-func buildPolynomial(coefficents []int, modulo int) func(x int) int {
+func buildPolynomial(coefficients []int, modulo int) (func(x int) int, error) {
 	f := func(x int) int {
 		sum := 0
-		for i, coefficient := range coefficents {
+		for i, coefficient := range coefficients {
 			sum += coefficient * int(math.Pow(float64(x), float64(i)))
 		}
 		return sum % modulo
 
 	}
-	return f
+	return f, nil
 }

@@ -1,25 +1,31 @@
 package shamir
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+	"math"
+)
 
-func ShamirReconstruct(shares []share) ([]byte, error) {
+func Reconstruct(shares []share) ([]byte, error) {
 	// TODO Assertions...
 	var secret []byte
 
 	for i := 0; i < len(shares[0].slices); i++ {
 		var byteShares []singleByteShare
 		for _, share := range shares {
-			byteShares := append(byteShares,
+			byteShares = append(byteShares,
 				singleByteShare{
 					shareIndex: share.shareIndex,
 					share:      share.slices[i],
 				})
-			reconstructedByte, err := reconstructByte(byteShares, share.threshold)
-			if err != nil {
-				return nil, err
-			}
-			secret = append(secret, reconstructedByte)
 		}
+
+		reconstructedByte, err := reconstructByte(byteShares, shares[0].threshold)
+		if err != nil {
+			return nil, err
+		}
+
+		secret = append(secret, reconstructedByte)
 	}
 
 	return secret, nil
@@ -27,7 +33,7 @@ func ShamirReconstruct(shares []share) ([]byte, error) {
 
 func reconstructByte(byteShares []singleByteShare, threshold uint8) (byte, error) {
 	if !isUniqueSolution(byteShares, threshold) {
-		return 0, errors.New("Can't find unique solution")
+		return 0, errors.New("can't find unique solution")
 	}
 
 	var points []point
@@ -36,17 +42,24 @@ func reconstructByte(byteShares []singleByteShare, threshold uint8) (byte, error
 	}
 
 	p := reconstructPolynom(points)
-	return byte(p(0)), nil
+
+	secret := p(0)
+	// p has to be a whole number
+	if secret != float64(int(secret)) {
+		return 0, errors.New("secret is not a whole number")
+	}
+
+	secretInt := int(secret) % prime
+
+	return byte(secretInt), nil
 }
 
 func isUniqueSolution(byteShares []singleByteShare, threshold uint8) bool {
 	// The Equation System is a Vandermonde-Matrix. There is a unique
 	// solution if the Determinant != 0. This is particularly easy for a
 	// Vandermonde-Matrix.
-
 	// if the number of shares is higher than the threshold, determine
 	// wether there is a combination of shares that has a unique solution
-
 	if len(byteShares) < int(threshold) {
 		return false
 	}
@@ -57,19 +70,21 @@ func isUniqueSolution(byteShares []singleByteShare, threshold uint8) bool {
 	}
 	// TODO check for all combinations
 	return !isDeterminantVandermondeZero(indices[:threshold])
-
 }
+
 func isDeterminantVandermondeZero(indices []int) bool {
 	for i := 0; i < len(indices); i++ {
 		for j := 0; j < len(indices); j++ {
 			if i == j {
 				continue
 			}
+
 			if indices[i] == indices[j] {
 				return true
 			}
 		}
 	}
+
 	return false
 }
 
@@ -90,7 +105,7 @@ func reconstructPolynom(points []point) func(int) float64 {
 	}
 }
 
-//
+// TODO this doesnt work for many points :(
 func createBasisPolynomial(points []point, index int) func(int) float64 {
 	return func(x int) float64 {
 		dividend := 1
@@ -100,10 +115,16 @@ func createBasisPolynomial(points []point, index int) func(int) float64 {
 			if j == index {
 				continue
 			}
-			dividend *= (x - point.x)
-			divisor *= points[index].x - point.x
 
+			dividend *= x - point.x
+			divisor *= points[index].x - point.x
 		}
-		return float64(dividend) / float64(divisor)
+
+		basisPolynomial := float64(dividend) / float64(divisor)
+		if math.IsNaN(basisPolynomial) {
+			fmt.Println("stop")
+		}
+
+		return basisPolynomial
 	}
 }

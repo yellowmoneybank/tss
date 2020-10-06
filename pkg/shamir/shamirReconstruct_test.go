@@ -1,16 +1,37 @@
 package shamir
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_ShamirReconstruct(t *testing.T) {
+	secret := []byte{10}
+
+	splits, _ := SplitSecret(secret, 3, 3)
+	reconstruct, _ := Reconstruct(splits)
+	assert.Equal(t, secret, reconstruct)
+	fmt.Println(string(reconstruct))
+}
+
+func Test_isDeterminantVandermondeZero(t *testing.T) {
+	{
+		indices := []int{1, 3, 52, 7, 9, -10}
+		assert.False(t, isDeterminantVandermondeZero(indices))
+	}
+	{
+		indices := []int{1, 3, 52, 7, 9, -10, 1}
+		assert.True(t, isDeterminantVandermondeZero(indices))
+	}
+}
+
 func Test_reconstructPolynomial(t *testing.T) {
 	{
 		//x^2
 		var points []point
-		for i := 0; i < 100; i++ {
+		for i := -50; i < 100; i++ {
 			points = append(points, point{
 				x: i,
 				y: i * i,
