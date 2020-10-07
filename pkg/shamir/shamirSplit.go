@@ -2,7 +2,6 @@ package shamir
 
 import (
 	"crypto/rand"
-	"fmt"
 	"math"
 	"math/big"
 
@@ -24,13 +23,14 @@ type singleByteShare struct {
 }
 
 func SplitSecret(secret []byte, shares int, threshold uint8) ([]share, error) {
-	//TODO: Assertions...
+	// TODO: Assertions...
 
 	var sharedSecrets []share
 
 	// Split every secretByte
 	// index => bytes
 	secretSharesMap := make(map[uint16][]uint16)
+
 	for _, secretByte := range secret {
 		byteShares, err := splitByte(secretByte, shares, threshold)
 		if err != nil {
@@ -106,8 +106,6 @@ func buildRandomPolynomial(constant, maxDegree, modulo int) (func(x int) int, er
 
 		coefficients = append(coefficients, int(coefficient.Int64()))
 	}
-	// TODO REMOVE THIS
-	fmt.Println(coefficients)
 	polynomial, err := buildPolynomial(coefficients, modulo)
 	if err != nil {
 		return nil, err
@@ -123,7 +121,6 @@ func buildPolynomial(coefficients []int, modulo int) (func(x int) int, error) {
 			sum += coefficient * int(math.Pow(float64(x), float64(i)))
 		}
 		return sum % modulo
-
 	}
 	return f, nil
 }
