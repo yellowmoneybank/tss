@@ -20,7 +20,7 @@ func Reconstruct(shares []share) ([]byte, error) {
 				})
 		}
 
-		reconstructedByte, err := reconstructByte(byteShares, shares[0].threshold)
+		reconstructedByte, err := reconstructByte(byteShares, shares[0].threshold, prime)
 		if err != nil {
 			return nil, err
 		}
@@ -31,7 +31,7 @@ func Reconstruct(shares []share) ([]byte, error) {
 	return secret, nil
 }
 
-func reconstructByte(byteShares []singleByteShare, threshold uint8) (byte, error) {
+func reconstructByte(byteShares []singleByteShare, threshold uint8, prime int) (byte, error) {
 	if !isUniqueSolution(byteShares, threshold) {
 		return 0, errors.New("can't find unique solution")
 	}
@@ -41,17 +41,15 @@ func reconstructByte(byteShares []singleByteShare, threshold uint8) (byte, error
 		points = append(points, point{int(byteShare.shareIndex), int(byteShare.share)})
 	}
 
-	p := reconstructPolynom(points)
+	p := reconstructPolynom(points, prime)
 
 	secret := p(0)
-	// p has to be a whole number
+
 	if secret != float64(int(secret)) {
-		return 0, errors.New("secret is not a whole number")
+		fmt.Println("We have a Problem")
 	}
 
-	secretInt := int(secret) % prime
-
-	return byte(secretInt), nil
+	return byte(secret), nil
 }
 
 func isUniqueSolution(byteShares []singleByteShare, threshold uint8) bool {
@@ -93,20 +91,22 @@ type point struct {
 	y int
 }
 
-// polynom interpolation a la Lagrange
-func reconstructPolynom(points []point) func(int) float64 {
+// polynom interpolation a la Lagrange.
+func reconstructPolynom(points []point, modulo int) func(int) float64 {
 	return func(x int) float64 {
 		sum := float64(0)
+
 		for i, point := range points {
-			basisPolynom := createBasisPolynomial(points, i)
+			basisPolynom := createBasisPolynomial(points, i, modulo)
 			sum += float64(point.y) * basisPolynom(x)
 		}
-		return sum
+
+		return modFloat(sum, float64(modulo))
 	}
 }
 
-// TODO this doesnt work for many points :(
-func createBasisPolynomial(points []point, index int) func(int) float64 {
+// TODO this doesnt work for many points.
+func createBasisPolynomial(points []point, index, modulo int) func(int) float64 {
 	return func(x int) float64 {
 		dividend := 1
 		divisor := 1
@@ -116,15 +116,42 @@ func createBasisPolynomial(points []point, index int) func(int) float64 {
 				continue
 			}
 
-			dividend *= x - point.x
-			divisor *= points[index].x - point.x
+			dividend = dividend * (x - point.x)
+			divisor = divisor * (points[index].x - point.x)
 		}
 
 		basisPolynomial := float64(dividend) / float64(divisor)
+
 		if math.IsNaN(basisPolynomial) {
 			fmt.Println("stop")
 		}
 
-		return basisPolynomial
+		return modFloat(basisPolynomial, float64(modulo))
 	}
+}
+
+func modInt(a, b int) int {
+	m := a % b
+	if a < 0 && b < 0 {
+		m -= b
+	}
+
+	if a < 0 && b > 0 {
+		m += b
+	}
+
+	return m
+}
+
+func modFloat(a, b float64) float64 {
+	m := math.Mod(a, b)
+	if a < 0 && b < 0 {
+		m -= b
+	}
+
+	if a < 0 && b > 0 {
+		m += b
+	}
+
+	return m
 }
