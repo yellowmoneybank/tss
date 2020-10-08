@@ -6,17 +6,17 @@ import (
 	"math"
 )
 
-func Reconstruct(shares []share) ([]byte, error) {
+func Reconstruct(shares []Share) ([]byte, error) {
 	// TODO Assertions...
 	var secret []byte
 
-	for i := 0; i < len(shares[0].slices); i++ {
+	for i := 0; i < len(shares[0].Slices); i++ {
 		var byteShares []singleByteShare
 		for _, share := range shares {
 			byteShares = append(byteShares,
 				singleByteShare{
 					shareIndex: share.shareIndex,
-					share:      share.slices[i],
+					share:      share.Slices[i],
 				})
 		}
 
@@ -26,6 +26,8 @@ func Reconstruct(shares []share) ([]byte, error) {
 		}
 
 		secret = append(secret, reconstructedByte)
+
+		fmt.Printf("reconstructed: %d \r", i)
 	}
 
 	return secret, nil
