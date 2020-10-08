@@ -12,14 +12,13 @@ import (
 // some random 257-Bit prime.
 const primeString = "193589079713426316252469562119038007891098842698016891089969436916793696692793"
 
-type antiCheat struct {
+type AntiCheat struct {
 	T big.Int
 	p big.Int
 }
 
-// CalculateCheckValue TODO: NEEDS COMMENT INFO
-func CalculateCheckValue(shares []shamir.Share) (antiCheat, error) {
-	var antiCheat antiCheat
+func CalculateCheckValue(shares []shamir.Share) (AntiCheat, error) {
+	var antiCheat AntiCheat
 
 	prime, ok := new(big.Int).SetString(primeString, 10)
 	if !ok {
@@ -47,6 +46,7 @@ func calcT(shares [][]byte, prime *big.Int) (*big.Int, error) {
 	if err != nil {
 		return &big.Int{}, err
 	}
+
 	sum1 := calcSum1(shares, prime)
 	sum2 := calcSum2(c, prime, len(shares))
 
@@ -65,7 +65,7 @@ func calcSum1(shares [][]byte, prime *big.Int) *big.Int {
 		// p^(2(i-1))
 		p := (new(big.Int)).Exp(prime, big.NewInt(int64(2*(i-1))), nil)
 
-		sum1 := sum1.Add(sum1, hash.Mul(hash, p))
+		sum1.Add(sum1, hash.Mul(hash, p))
 	}
 
 	return sum1
@@ -73,14 +73,16 @@ func calcSum1(shares [][]byte, prime *big.Int) *big.Int {
 
 func calcSum2(randomNumber *big.Int, prime *big.Int, numberOfShares int) *big.Int {
 	sum2 := big.NewInt(0)
-	c := (new(big.Int)).Set(randomNumber)
 
 	for i := 1; i <= numberOfShares-1; i++ {
+		c := (new(big.Int)).Set(randomNumber)
+
 		// p = 2i - 1
 		p := (new(big.Int)).Exp(prime, big.NewInt(int64((2*i)-1)), nil)
 
 		sum2.Add(sum2, c.Mul(c, p))
 	}
+
 	return sum2
 }
 
@@ -90,7 +92,7 @@ func decodeSecret(share shamir.Share) []byte {
 	var secret []byte
 
 	for _, i := range share.Slices {
-		var h, l uint8 = uint8(i >> 8), uint8(i & 0xff)
+		var h, l = uint8(i >> 8), uint8(i & 0xff)
 		secret = append(secret, h, l)
 	}
 
