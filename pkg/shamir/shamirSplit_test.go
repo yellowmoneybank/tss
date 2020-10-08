@@ -26,9 +26,9 @@ func TestSplitSecret(t *testing.T) {
 			assert.Equal(t, threshold, share.threshold, "Al Shares should have the same threshold")
 		}
 
-		lenShare := len(shares[0].slices)
+		lenShare := len(shares[0].Slices)
 		for _, share := range shares {
-			assert.Equal(t, lenShare, len(share.slices), "All shares should have the same length")
+			assert.Equal(t, lenShare, len(share.Slices), "All shares should have the same length")
 		}
 	}
 }

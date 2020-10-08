@@ -2,6 +2,7 @@ package shamir
 
 import (
 	"crypto/rand"
+	"fmt"
 	"math"
 	"math/big"
 
@@ -10,11 +11,11 @@ import (
 
 const prime = 257
 
-type share struct {
+type Share struct {
 	id         uuid.UUID
 	threshold  uint8
 	shareIndex uint16
-	slices     []uint16
+	Slices     []uint16
 }
 
 type singleByteShare struct {
@@ -22,16 +23,16 @@ type singleByteShare struct {
 	share      uint16
 }
 
-func SplitSecret(secret []byte, shares int, threshold uint8) ([]share, error) {
+func SplitSecret(secret []byte, shares int, threshold uint8) ([]Share, error) {
 	// TODO: Assertions...
 
-	var sharedSecrets []share
+	var sharedSecrets []Share
 
 	// Split every secretByte
 	// index => bytes
 	secretSharesMap := make(map[uint16][]uint16)
 
-	for _, secretByte := range secret {
+	for i, secretByte := range secret {
 		byteShares, err := splitByte(secretByte, shares, threshold)
 		if err != nil {
 			return nil, err
@@ -43,16 +44,18 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]share, error) {
 			bytes = append(bytes, byteShare.share)
 			secretSharesMap[byteShare.shareIndex] = bytes
 		}
+
+		fmt.Printf("splitted: %d \r", i)
 	}
 
 	// all Shares have the same UUID
 	uuId := uuid.New()
 	for index, bytes := range secretSharesMap {
-		sharedSecrets = append(sharedSecrets, share{
+		sharedSecrets = append(sharedSecrets, Share{
 			id:         uuId,
 			threshold:  threshold,
 			shareIndex: index,
-			slices:     bytes,
+			Slices:     bytes,
 		})
 	}
 	return sharedSecrets, nil
