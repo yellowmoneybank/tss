@@ -34,6 +34,7 @@ func CalculateCheckValue(shares []shamir.Share) (AntiCheat, error) {
 	if err != nil {
 		return antiCheat, err
 	}
+
 	antiCheat.T = *t
 
 	return antiCheat, nil
@@ -43,10 +44,12 @@ func extractSecrets(shares []shamir.Share) [][]byte {
 	shareSecrets := make([][]byte, len(shares))
 
 	// order by index
-	sort.Slice(shares, func(i, j int) bool { return shares[i].ShareIndex < shares[i].ShareIndex })
+	sort.Slice(shares, func(i, j int) bool { return shares[i].ShareIndex < shares[j].ShareIndex })
+
 	for i := range shareSecrets {
 		shareSecrets[i] = decodeSecret(shares[i])
 	}
+
 	return shareSecrets
 }
 
