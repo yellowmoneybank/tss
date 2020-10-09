@@ -17,9 +17,9 @@ func TestSplitSecret(t *testing.T) {
 
 		assert.Equal(t, len(shares), numberOfShares)
 
-		uuid := shares[0].id
+		uuid := shares[0].Id
 		for _, share := range shares {
-			assert.Equal(t, uuid, share.id, "All shares should have the same id")
+			assert.Equal(t, uuid, share.Id, "All shares should have the same id")
 		}
 
 		for _, share := range shares {

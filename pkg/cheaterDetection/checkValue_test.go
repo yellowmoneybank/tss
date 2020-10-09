@@ -1,6 +1,7 @@
 package cheaterDetection
 
 import (
+	"fmt"
 	"math/big"
 	"reflect"
 	"testing"
@@ -9,29 +10,21 @@ import (
 	"moritzm-mueller.de/tss/pkg/shamir"
 )
 
-func TestCalculateCheckValue(t *testing.T) {
-	type args struct {
-		shares []shamir.Share
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    AntiCheat
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := CalculateCheckValue(tt.args.shares)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CalculateCheckValue() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CalculateCheckValue() = %v, want %v", got, tt.want)
-			}
-		})
+func Test_CalculateCheckValue(t *testing.T) {
+	{
+		secret := "much secret"
+		var threshold uint8 = 3
+		numberOfShares := 5
+		shares, err := shamir.SplitSecret([]byte(secret), numberOfShares, threshold)
+		if err != nil {
+			fmt.Println("ლ(ಠ_ಠ ლ)")
+		}
+
+		antiCheat, err := CalculateCheckValue(shares)
+		if err != nil {
+			fmt.Println("ლ(ಠ_ಠ ლ)")
+		}
+		fmt.Println((antiCheat.T).String())
 	}
 }
 

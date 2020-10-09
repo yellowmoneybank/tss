@@ -15,7 +15,7 @@ func Reconstruct(shares []Share) ([]byte, error) {
 		for _, share := range shares {
 			byteShares = append(byteShares,
 				singleByteShare{
-					shareIndex: share.shareIndex,
+					shareIndex: share.ShareIndex,
 					share:      share.Slices[i],
 				})
 		}

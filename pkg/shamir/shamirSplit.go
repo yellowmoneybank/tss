@@ -12,9 +12,9 @@ import (
 const prime = 257
 
 type Share struct {
-	id         uuid.UUID
+	Id         uuid.UUID
 	threshold  uint8
-	shareIndex uint16
+	ShareIndex uint16
 	Slices     []uint16
 }
 
@@ -52,9 +52,9 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]Share, error) {
 	uuId := uuid.New()
 	for index, bytes := range secretSharesMap {
 		sharedSecrets = append(sharedSecrets, Share{
-			id:         uuId,
+			Id:         uuId,
 			threshold:  threshold,
-			shareIndex: index,
+			ShareIndex: index,
 			Slices:     bytes,
 		})
 	}
