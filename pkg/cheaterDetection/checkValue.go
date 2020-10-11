@@ -2,11 +2,9 @@ package cheaterDetection
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"math/big"
-	"sort"
 
 	"moritzm-mueller.de/tss/pkg/shamir"
 )
@@ -29,9 +27,8 @@ func CalculateCheckValue(shares []shamir.Share) (AntiCheat, error) {
 
 	antiCheat.P = *prime
 
-	shareSecrets := extractSecrets(shares)
-
-	t, err := calcT(shareSecrets, prime)
+	hashes := calcHashes(shares)
+	t, err := calcT(hashes, prime)
 	if err != nil {
 		return antiCheat, err
 	}
@@ -41,44 +38,36 @@ func CalculateCheckValue(shares []shamir.Share) (AntiCheat, error) {
 	return antiCheat, nil
 }
 
-func extractSecrets(shares []shamir.Share) [][]byte {
-	shareSecrets := make([][]byte, len(shares))
+func extractSecrets(shares []shamir.Share) map[int][]byte {
+	shareSecrets := make(map[int][]byte)
 
-	// order by index
-	sort.Slice(shares, func(i, j int) bool { return shares[i].ShareIndex < shares[j].ShareIndex })
-
-	for i := range shareSecrets {
-		shareSecrets[i] = decodeSecret(shares[i])
+	for _, share := range shares {
+		shareSecrets[int(share.ShareIndex)] = decodeSecret(share)
 	}
 
 	return shareSecrets
 }
 
-func calcT(shares [][]byte, prime *big.Int) (*big.Int, error) {
+func calcT(hashes map[int]big.Int, prime *big.Int) (*big.Int, error) {
 	c, err := rand.Int(rand.Reader, prime)
 	if err != nil {
 		return &big.Int{}, err
 	}
 
-	sum1 := calcSum1(shares, prime)
-	sum2 := calcSum2(c, prime, len(shares))
+	sum1 := calcSum1(hashes, prime)
+	sum2 := calcSum2(c, prime, len(hashes))
 
 	return sum1.Add(sum1, sum2), nil
 }
 
-func calcSum1(shares [][]byte, prime *big.Int) *big.Int {
+func calcSum1(hashes map[int]big.Int, prime *big.Int) *big.Int {
 	sum1 := big.NewInt(0)
-	h := sha256.New()
 
-	for i := 1; i <= len(shares); i++ {
-		share := shares[i-1]
-
-		hash := (new(big.Int)).SetBytes(h.Sum(share))
-
+	for index, hash := range hashes {
 		// p^(2(i-1))
-		p := (new(big.Int)).Exp(prime, big.NewInt(int64(2*(i-1))), nil)
+		p := (new(big.Int)).Exp(prime, big.NewInt(int64(2*(index-1))), nil)
 
-		sum1.Add(sum1, hash.Mul(hash, p))
+		sum1.Add(sum1, hash.Mul(p, &hash))
 	}
 
 	return sum1
