@@ -3,6 +3,7 @@ package cheaterDetection
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/binary"
 	"errors"
 	"math/big"
 	"sort"
@@ -99,13 +100,14 @@ func calcSum2(randomNumber *big.Int, prime *big.Int, numberOfShares int) *big.In
 }
 
 // shamir.Share is of type []uint16, so some conversion to []byte is due.
-// TODO This code is architecture dependent.
 func decodeSecret(share shamir.Share) []byte {
 	var secret []byte
 
 	for _, i := range share.Slices {
-		h, l := uint8(i>>8), uint8(i&0xff)
-		secret = append(secret, h, l)
+		b := make([]byte, 2)
+		binary.BigEndian.PutUint16(b, i)
+
+		secret = append(secret, b[0], b[1])
 	}
 
 	return secret
