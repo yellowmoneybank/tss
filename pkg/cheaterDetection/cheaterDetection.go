@@ -2,8 +2,6 @@ package cheaterDetection
 
 import (
 	"crypto/sha256"
-	"errors"
-	"log"
 	"math/big"
 
 	"moritzm-mueller.de/tss/pkg/shamir"
@@ -15,10 +13,7 @@ func IsConsistent(shares []shamir.Share, t AntiCheat) []int {
 
 	hashes := calcHashes(shares)
 
-	TNew, err := calcTNew(shares, prime, hashes)
-	if err != nil {
-		log.Println("calcTNew failed")
-	}
+	TNew := calcTNew(prime, hashes)
 
 	var cheaters []int
 
@@ -44,34 +39,27 @@ func isValidShare(antiCheat AntiCheat, tNew *big.Int, index int) bool {
 	return T.Int64() == 0
 }
 
-func calcTNew(shares []shamir.Share, prime *big.Int, hashes map[int]big.Int) (*big.Int, error) {
-	if len(shares) != len(hashes) {
-		return &big.Int{}, errors.New("there should be as many shares as hashes")
-	}
-
+func calcTNew(prime *big.Int, hashes map[int]big.Int) *big.Int {
 	tNew := big.NewInt(0)
 
-	for _, share := range shares {
-		exp := big.NewInt(2 * (int64(share.ShareIndex) - 1))
+	for index, hash := range hashes {
+		exp := big.NewInt(int64(2 * (index - 1)))
 		p := (new(big.Int)).Set(prime)
 		p.Exp(p, exp, nil)
-
-		hash := hashes[int(share.ShareIndex)]
 
 		p.Mul(p, &hash)
 		tNew = tNew.Add(tNew, p)
 	}
 
-	return tNew, nil
+	return tNew
 }
 
 func calcHashes(shares []shamir.Share) map[int]big.Int {
-	h := sha256.New()
 	hashes := make(map[int]big.Int)
 
 	for _, share := range shares {
-		hash := h.Sum(decodeSecret(share))
-		hashes[int(share.ShareIndex)] = *(new(big.Int)).SetBytes(hash)
+		hash := sha256.Sum256(decodeSecret(share))
+		hashes[int(share.ShareIndex)] = *(new(big.Int)).SetBytes(hash[:])
 	}
 
 	return hashes

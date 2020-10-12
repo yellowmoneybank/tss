@@ -28,36 +28,24 @@ func CalculateCheckValue(shares []shamir.Share) (AntiCheat, error) {
 	antiCheat.P = *prime
 
 	hashes := calcHashes(shares)
-	t, err := calcT(hashes, prime)
+
+	c, err := rand.Int(rand.Reader, prime)
 	if err != nil {
 		return antiCheat, err
 	}
+
+	t := calcT(hashes, prime, c)
 
 	antiCheat.T = *t
 
 	return antiCheat, nil
 }
 
-func extractSecrets(shares []shamir.Share) map[int][]byte {
-	shareSecrets := make(map[int][]byte)
-
-	for _, share := range shares {
-		shareSecrets[int(share.ShareIndex)] = decodeSecret(share)
-	}
-
-	return shareSecrets
-}
-
-func calcT(hashes map[int]big.Int, prime *big.Int) (*big.Int, error) {
-	c, err := rand.Int(rand.Reader, prime)
-	if err != nil {
-		return &big.Int{}, err
-	}
-
+func calcT(hashes map[int]big.Int, prime, c *big.Int) *big.Int {
 	sum1 := calcSum1(hashes, prime)
 	sum2 := calcSum2(c, prime, len(hashes))
 
-	return sum1.Add(sum1, sum2), nil
+	return sum1.Add(sum1, sum2)
 }
 
 func calcSum1(hashes map[int]big.Int, prime *big.Int) *big.Int {
@@ -67,7 +55,7 @@ func calcSum1(hashes map[int]big.Int, prime *big.Int) *big.Int {
 		// p^(2(i-1))
 		p := (new(big.Int)).Exp(prime, big.NewInt(int64(2*(index-1))), nil)
 
-		sum1.Add(sum1, hash.Mul(p, &hash))
+		sum1.Add(sum1, p.Mul(p, &hash))
 	}
 
 	return sum1

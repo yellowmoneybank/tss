@@ -33,12 +33,9 @@ func TestIsConsistent(t *testing.T) {
 		antiCheat, _ := CalculateCheckValue(shares)
 
 		shares[3].Slices = []uint16{1}
+		fmt.Println(shares[3].ShareIndex)
 
-		shares[4].Slices = []uint16{1}
-
-		shares[5].Slices = []uint16{1}
-
-		assert.Equal(t, []int{int(shares[3].ShareIndex), int(shares[4].ShareIndex), int(shares[5].ShareIndex)}, IsConsistent(shares, antiCheat))
+		assert.Equal(t, []int{int(shares[3].ShareIndex)}, IsConsistent(shares, antiCheat))
 	}
 }
 
@@ -76,7 +73,7 @@ func Test_isValidShare(t *testing.T) {
 		assert.True(t, validShare)
 	}
 	{
-		secret := "much secret, very secure"
+		secret := "seeeeecret!!!!!"
 		var threshold uint8 = 5
 		numberOfShares := 10
 		shares, err := shamir.SplitSecret([]byte(secret), numberOfShares, threshold)
@@ -88,36 +85,58 @@ func Test_isValidShare(t *testing.T) {
 
 		// manipulate share...
 		shares[0].Slices = []uint16{1, 23, 4}
-		tNew, _ := calcTNew(shares, &antiCheat.P, calcHashes(shares))
+		hashesNew := calcHashes(shares)
+		tNew := calcTNew(&antiCheat.P, hashesNew)
 
 		for i, share := range shares {
-			if i == 0 {
-				assert.False(t, isValidShare(antiCheat, tNew, int(share.ShareIndex)))
+			if i == 0{
+				assert.Falsef(t, isValidShare(antiCheat, tNew, int(share.ShareIndex)), "share with index %d is false negative", share.ShareIndex)
+
+				continue
 			}
-			assert.True(t, isValidShare(antiCheat, tNew, int(share.ShareIndex)))
+			assert.Truef(t, isValidShare(antiCheat, tNew, int(share.ShareIndex)), "share with index %d is false positive", share.ShareIndex)
 		}
+	}
+	{
+		assert.True(t, isValidShare(AntiCheat{
+			T: *big.NewInt(19037),
+			P: *big.NewInt(11),
+		}, big.NewInt(29289), 1))
+
+		boolean := isValidShare(AntiCheat{
+			T: *big.NewInt(19037),
+			P: *big.NewInt(11),
+		}, big.NewInt(29289), 3)
+		assert.False(t, boolean)
 	}
 }
 
 func Test_calcTNew(t *testing.T) {
-	shares := []shamir.Share{
-		{
-			ID:         [16]byte{},
-			ShareIndex: 1,
-			Slices:     []uint16{2},
-		},
-		{
-			ID:         [16]byte{},
-			ShareIndex: 3,
-			Slices:     []uint16{8},
-		},
-	}
-	hashes := map[int]big.Int{
-		1: *big.NewInt(7),
-		3: *big.NewInt(1),
+	{
+		hashes := map[int]big.Int{
+			1: *big.NewInt(7),
+			3: *big.NewInt(1),
+		}
+
+		tNew := calcTNew(big.NewInt(11), hashes)
+
+		assert.Equal(t, big.NewInt(14648), tNew)
 	}
 
-	tnew, _ := calcTNew(shares, big.NewInt(11), hashes)
-
-	assert.Equal(t, big.NewInt(14648), tnew)
+	{
+		tnew := calcTNew(big.NewInt(11), map[int]big.Int{
+			1: *big.NewInt(7),
+			3: *big.NewInt(2),
+		})
+		assert.Equal(t, big.NewInt(29289), tnew)
+	}
+	{
+		tnew := calcTNew(big.NewInt(257), map[int]big.Int{
+			1: *big.NewInt(10),
+			6: *big.NewInt(12),
+			3: *big.NewInt(11),
+		})
+		result, _ := new(big.Int).SetString("15083859530707885268837409", 10)
+		assert.Equal(t, result, tnew)
+	}
 }
