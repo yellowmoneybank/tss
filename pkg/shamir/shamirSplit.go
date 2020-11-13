@@ -49,15 +49,17 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]Share, error) {
 	}
 
 	// all Shares have the same UUID
-	uuId := uuid.New()
+	uuID := uuid.New()
+
 	for index, bytes := range secretSharesMap {
 		sharedSecrets = append(sharedSecrets, Share{
-			ID:         uuId,
+			ID:         uuID,
 			threshold:  threshold,
 			ShareIndex: index,
 			Slices:     bytes,
 		})
 	}
+
 	return sharedSecrets, nil
 }
 
@@ -72,6 +74,7 @@ func splitByte(secretByte byte, shares int, threshold uint8) ([]singleByteShare,
 	indices := createIndices(shares)
 
 	singleByteShares := createByteShares(indices, polynomial)
+
 	return singleByteShares, nil
 }
 
@@ -80,6 +83,7 @@ func createIndices(indexCount int) []uint16 {
 	for i := 1; i <= indexCount; i++ {
 		indices = append(indices, uint16(i))
 	}
+
 	return indices
 }
 
@@ -93,6 +97,7 @@ func createByteShares(indices []uint16, polynomial func(x int) int) []singleByte
 				share:      uint16(polynomial(int(index))),
 			})
 	}
+
 	return singleByteShares
 }
 
@@ -100,6 +105,7 @@ func createByteShares(indices []uint16, polynomial func(x int) int) []singleByte
 // given constant term and a given modulo.
 func buildRandomPolynomial(constant, maxDegree, modulo int) (func(x int) int, error) {
 	// first coefficient is the secret
+
 	coefficients := []int{constant}
 	for i := 0; i < maxDegree; i++ {
 		coefficient, err := rand.Int(rand.Reader, big.NewInt(prime))
@@ -109,21 +115,25 @@ func buildRandomPolynomial(constant, maxDegree, modulo int) (func(x int) int, er
 
 		coefficients = append(coefficients, int(coefficient.Int64()))
 	}
+
 	polynomial, err := buildPolynomial(coefficients, modulo)
 	if err != nil {
 		return nil, err
 	}
+
 	return polynomial, nil
 }
 
-// Builds a polynomial function with given coefficients, and degree len(coefficients) + 1
+// Builds a polynomial function with given coefficients, and degree len(coefficients) + 1.
 func buildPolynomial(coefficients []int, modulo int) (func(x int) int, error) {
 	f := func(x int) int {
 		sum := 0
 		for i, coefficient := range coefficients {
 			sum += coefficient * int(math.Pow(float64(x), float64(i)))
 		}
+
 		return sum % modulo
 	}
+
 	return f, nil
 }
