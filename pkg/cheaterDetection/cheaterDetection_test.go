@@ -32,7 +32,7 @@ func TestIsConsistent(t *testing.T) {
 		}
 		antiCheat, _ := CalculateCheckValue(shares)
 
-		shares[3].Slices = []uint16{1}
+		shares[3].Secrets = []uint16{1}
 		fmt.Println(shares[3].ShareIndex)
 
 		assert.Equal(t, []int{int(shares[3].ShareIndex)}, IsConsistent(shares, antiCheat))
@@ -84,7 +84,7 @@ func Test_isValidShare(t *testing.T) {
 		antiCheat, _ := CalculateCheckValue(shares)
 
 		// manipulate share...
-		shares[0].Slices = []uint16{1, 23, 4}
+		shares[0].Secrets = []uint16{1, 23, 4}
 		hashesNew := calcHashes(shares)
 		tNew := calcTNew(&antiCheat.P, hashesNew)
 

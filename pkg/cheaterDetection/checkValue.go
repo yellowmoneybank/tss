@@ -80,7 +80,7 @@ func calcSum2(randomNumber *big.Int, prime *big.Int, numberOfShares int) *big.In
 func decodeSecret(share shamir.Share) []byte {
 	var secret []byte
 
-	for _, i := range share.Slices {
+	for _, i := range share.Secrets {
 		b := make([]byte, 2)
 		binary.BigEndian.PutUint16(b, i)
 

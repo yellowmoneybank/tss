@@ -40,7 +40,7 @@ func Test_reconstructPolynomial(t *testing.T) {
 		var points []point
 
 		shouldBePolynomial := func(x int) float64 {
-			return float64((10 + 45*x + 102*x*x + 200*x*x*x) % prime)
+			return float64((10 + 45*x + 102*x*x + 200*x*x*x) % p)
 		}
 
 		for i := 1; i < 20; i++ {
@@ -50,16 +50,16 @@ func Test_reconstructPolynomial(t *testing.T) {
 			})
 		}
 
-		assert.Equal(t, shouldBePolynomial(0), reconstructPolynom(points, prime)(0), "should be the same")
+		assert.Equal(t, shouldBePolynomial(0), reconstructPolynom(points, p)(0), "should be the same")
 	}
 	{
 		// f(x) = 10 + 45 x + 102 x²
 		points := []point{{1, 157}, {2, 251}, {3, 35} /*{4, 23}, {5, 215}*/}
 
-		actualPolynomial := reconstructPolynom(points, prime)
+		actualPolynomial := reconstructPolynom(points, p)
 
 		shouldBePolynomial := func(x int) float64 {
-			return float64(modInt(10+45*x+102*x*x, prime))
+			return float64(modInt(10+45*x+102*x*x, p))
 		}
 
 		// secret
@@ -77,7 +77,7 @@ func Test_createBasisPolynomial(t *testing.T) {
 			})
 		}
 
-		basisPolynomial := createBasisPolynomial(points, 0, prime)
+		basisPolynomial := createBasisPolynomial(points, 0, p)
 		shouldBePolynomial := func(x float64) float64 {
 			return 0.5 * ((x * x) - 5*x + 6)
 		}
@@ -87,14 +87,14 @@ func Test_createBasisPolynomial(t *testing.T) {
 	{ // f(x) = 10 + 45 x + 102 x²
 		points := []point{{1, 157}, {2, 251}, {3, 35} /*{4, 23}, {5, 215}*/}
 
-		basisPolynomial := createBasisPolynomial(points, 0, prime)
-		assert.Equal(t, modFloat(float64(3), float64(prime)), basisPolynomial(0))
+		basisPolynomial := createBasisPolynomial(points, 0, p)
+		assert.Equal(t, modFloat(float64(3), float64(p)), basisPolynomial(0))
 
-		basisPolynomial = createBasisPolynomial(points, 1, prime)
-		assert.Equal(t, modFloat(float64(-3), float64(prime)), basisPolynomial(0))
+		basisPolynomial = createBasisPolynomial(points, 1, p)
+		assert.Equal(t, modFloat(float64(-3), float64(p)), basisPolynomial(0))
 
-		basisPolynomial = createBasisPolynomial(points, 2, prime)
-		assert.Equal(t, modFloat(float64(1), float64(prime)), basisPolynomial(0))
+		basisPolynomial = createBasisPolynomial(points, 2, p)
+		assert.Equal(t, modFloat(float64(1), float64(p)), basisPolynomial(0))
 	}
 }
 

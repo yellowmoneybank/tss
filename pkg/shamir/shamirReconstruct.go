@@ -4,23 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"moritzm-mueller.de/tss/pkg/secretSharing"
 )
 
-func Reconstruct(shares []Share) ([]byte, error) {
+func Reconstruct(shares []secretSharing.Share) ([]byte, error) {
 	// TODO Assertions...
 	var secret []byte
 
-	for i := 0; i < len(shares[0].Slices); i++ {
-		var byteShares []singleByteShare
+	for i := 0; i < len(shares[0].Secrets); i++ {
+		byteShares := make(map[int]secretSharing.ByteShare)
 		for _, share := range shares {
-			byteShares = append(byteShares,
-				singleByteShare{
-					shareIndex: share.ShareIndex,
-					share:      share.Slices[i],
-				})
+			byteShares[int(share.ShareIndex)] = share.Secrets[i]
 		}
 
-		reconstructedByte, err := reconstructByte(byteShares, shares[0].threshold, prime)
+		reconstructedByte, err := reconstructByte(byteShares, shares[0].Threshold, shares[0].Prime)
 		if err != nil {
 			return nil, err
 		}
@@ -33,14 +30,14 @@ func Reconstruct(shares []Share) ([]byte, error) {
 	return secret, nil
 }
 
-func reconstructByte(byteShares []singleByteShare, threshold uint8, prime int) (byte, error) {
+func reconstructByte(byteShares map[int]secretSharing.ByteShare, threshold uint8, prime int) (byte, error) {
 	if !isUniqueSolution(byteShares, threshold) {
 		return 0, errors.New("can't find unique solution")
 	}
 
 	var points []point
-	for _, byteShare := range byteShares {
-		points = append(points, point{int(byteShare.shareIndex), int(byteShare.share)})
+	for x, byteShare := range byteShares {
+		points = append(points, point{x, int(byteShare.Share)})
 	}
 
 	p := reconstructPolynom(points, prime)
@@ -54,7 +51,7 @@ func reconstructByte(byteShares []singleByteShare, threshold uint8, prime int) (
 	return byte(secret), nil
 }
 
-func isUniqueSolution(byteShares []singleByteShare, threshold uint8) bool {
+func isUniqueSolution(byteShares map[int]secretSharing.ByteShare, threshold uint8) bool {
 	// The Equation System is a Vandermonde-Matrix. There is a unique
 	// solution if the Determinant != 0. This is particularly easy for a
 	// Vandermonde-Matrix.
@@ -65,8 +62,8 @@ func isUniqueSolution(byteShares []singleByteShare, threshold uint8) bool {
 	}
 
 	var indices []int
-	for _, byteshare := range byteShares {
-		indices = append(indices, int(byteshare.shareIndex))
+	for x:= range byteShares {
+		indices = append(indices, x)
 	}
 	// TODO check for all combinations
 	return !isDeterminantVandermondeZero(indices[:threshold])

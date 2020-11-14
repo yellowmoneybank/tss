@@ -5,32 +5,31 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"moritzm-mueller.de/tss/pkg/feldman"
+	"moritzm-mueller.de/tss/pkg/secretSharing"
 
 	"github.com/google/uuid"
 )
 
-const prime = 257
+// p * r + 1 = q
+// g is generator over Z_prime
+// needed for Feldman's VSS.
+const (
+	p = 257
+	//	r     = 6
+	q = 1543
+	g = 5
+)
 
-type Share struct {
-	ID         uuid.UUID
-	threshold  uint8
-	ShareIndex uint16
-	Slices     []uint16
-}
 
-type singleByteShare struct {
-	shareIndex uint16
-	share      uint16
-}
-
-func SplitSecret(secret []byte, shares int, threshold uint8) ([]Share, error) {
+func SplitSecret(secret []byte, shares int, threshold uint8) ([]secretSharing.Share, error) {
 	// TODO: Assertions...
 
-	var sharedSecrets []Share
+	var sharedSecrets []secretSharing.Share
 
-	// Split every secretByte
-	// index => bytes
-	secretSharesMap := make(map[uint16][]uint16)
+	// Split every secretByte, every index has multiple byteShares
+	// index => byteShares
+	secretSharesMap := make(map[uint16][]secretSharing.ByteShare)
 
 	for i, secretByte := range secret {
 		byteShares, err := splitByte(secretByte, shares, threshold)
@@ -38,11 +37,11 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]Share, error) {
 			return nil, err
 		}
 
-		for _, byteShare := range byteShares {
+		for index, byteShare := range byteShares {
 			// append to map
-			bytes := secretSharesMap[byteShare.shareIndex]
-			bytes = append(bytes, byteShare.share)
-			secretSharesMap[byteShare.shareIndex] = bytes
+			shares := secretSharesMap[uint16(index)]
+			shares = append(shares, byteShare)
+			secretSharesMap[uint16(index)] = shares
 		}
 
 		fmt.Printf("splitted: %d \r", i)
@@ -51,21 +50,33 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]Share, error) {
 	// all Shares have the same UUID
 	uuID := uuid.New()
 
-	for index, bytes := range secretSharesMap {
-		sharedSecrets = append(sharedSecrets, Share{
+	for index, byteShares := range secretSharesMap {
+		sharedSecrets = append(sharedSecrets, secretSharing.Share{
 			ID:         uuID,
-			threshold:  threshold,
+			Threshold:  threshold,
 			ShareIndex: index,
-			Slices:     bytes,
+			Secrets:    byteShares,
+			Prime:      p,
+			Q:          q,
+			G:          g,
 		})
 	}
 
 	return sharedSecrets, nil
 }
 
-func splitByte(secretByte byte, shares int, threshold uint8) ([]singleByteShare, error) {
+// splits secretByte into shares with threshold. Return a map that maps the indices to the shares
+func splitByte(secretByte byte, shares int, threshold uint8) (map[int]secretSharing.ByteShare, error) {
 	// Create Polynomial, the constant term is the secret, the maximum degree is threshold - 1
-	polynomial, err := buildRandomPolynomial(int(secretByte), int(threshold-1), prime)
+	coefficients := []int{int(secretByte)}
+	randomCoefficients, err := randomCoefficients(int(threshold - 1))
+	if err != nil {
+		return nil, err
+	}
+
+	coefficients = append(coefficients, randomCoefficients...)
+
+	polynomial, err := buildPolynomial(coefficients, p)
 	if err != nil {
 		return nil, err
 	}
@@ -75,53 +86,55 @@ func splitByte(secretByte byte, shares int, threshold uint8) ([]singleByteShare,
 
 	singleByteShares := createByteShares(indices, polynomial)
 
+	// initialize Checkvalues
+
+	checkValues := feldman.CalculateCheckValues(g, q, coefficients)
+	// type conversion
+	checkvaluesUint16 := make([]uint16, len(checkValues))
+	for _, value := range checkValues {
+		checkvaluesUint16 = append(checkvaluesUint16, uint16(value))
+	}
+
+	for _, byteShare := range singleByteShares {
+
+		copy(byteShare.CheckValues, checkvaluesUint16)
+	}
 	return singleByteShares, nil
 }
 
-func createIndices(indexCount int) []uint16 {
-	var indices []uint16
+func createIndices(indexCount int) []int {
+	var indices []int
 	for i := 1; i <= indexCount; i++ {
-		indices = append(indices, uint16(i))
+		indices = append(indices, i)
 	}
 
 	return indices
 }
 
-func createByteShares(indices []uint16, polynomial func(x int) int) []singleByteShare {
-	var singleByteShares []singleByteShare
+func createByteShares(indices []int, polynomial func(x int) int) map[int]secretSharing.ByteShare {
+	singleByteShares := make(map[int]secretSharing.ByteShare)
 	for _, index := range indices {
-		singleByteShares = append(
-			singleByteShares,
-			singleByteShare{
-				shareIndex: index,
-				share:      uint16(polynomial(int(index))),
-			})
+		singleByteShares[index] = secretSharing.ByteShare{
+			Share:       uint16(polynomial(index)),
+			CheckValues: nil,
+		}
 	}
 
 	return singleByteShares
 }
 
-// Builds a polynomial function with a maximum degree, random coefficients, a
-// given constant term and a given modulo.
-func buildRandomPolynomial(constant, maxDegree, modulo int) (func(x int) int, error) {
-	// first coefficient is the secret
-
-	coefficients := []int{constant}
-	for i := 0; i < maxDegree; i++ {
-		coefficient, err := rand.Int(rand.Reader, big.NewInt(prime))
+func randomCoefficients(number int) ([]int, error) {
+	coefficients := make([]int, number)
+	for i := 0; i < number; i++ {
+		coefficient, err := rand.Int(rand.Reader, big.NewInt(p))
 		if err != nil {
 			return nil, err
 		}
 
-		coefficients = append(coefficients, int(coefficient.Int64()))
+		coefficients[i] =  int(coefficient.Int64())
 	}
 
-	polynomial, err := buildPolynomial(coefficients, modulo)
-	if err != nil {
-		return nil, err
-	}
-
-	return polynomial, nil
+	return coefficients, nil
 }
 
 // Builds a polynomial function with given coefficients, and degree len(coefficients) + 1.

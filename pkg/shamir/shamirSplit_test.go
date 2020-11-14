@@ -23,42 +23,42 @@ func TestSplitSecret(t *testing.T) {
 		}
 
 		for _, share := range shares {
-			assert.Equal(t, threshold, share.threshold, "Al Shares should have the same threshold")
+			assert.Equal(t, threshold, share.Threshold, "Al Shares should have the same threshold")
 		}
 
-		lenShare := len(shares[0].Slices)
+		lenShare := len(shares[0].Secrets)
 		for _, share := range shares {
-			assert.Equal(t, lenShare, len(share.Slices), "All shares should have the same length")
+			assert.Equal(t, lenShare, len(share.Secrets), "All shares should have the same length")
 		}
 	}
 }
 
 func Test_buildPolynomial(t *testing.T) {
-	p, _ := buildPolynomial([]int{10, 45, 102}, prime)
+	poly, _ := buildPolynomial([]int{10, 45, 102}, p)
 
 	shouldBePolynomial := func(x int) int {
-		return (10 + 45*x + 102*x*x) % prime
+		return (10 + 45*x + 102*x*x) % p
 	}
 
 	for i := 1; i <= 3; i++ {
-		assert.Equal(t, shouldBePolynomial(i), p(i), "should be Equal")
+		assert.Equal(t, shouldBePolynomial(i), poly(i), "should be Equal")
 	}
 }
 
 func Test_createByteShares(t *testing.T) {
-	var indices []uint16
+	var indices []int
 	for i := 1; i <= 5; i++ {
-		indices = append(indices, uint16(i))
+		indices = append(indices,i)
 	}
 
 	polynomial := func(x int) int {
-		return (10 + 45*x + 102*x*x) % prime
+		return (10 + 45*x + 102*x*x) % p
 	}
 
 	byteShares := createByteShares(indices, polynomial)
 
 	for i, share := range byteShares {
-		assert.Equal(t, indices[i], share.shareIndex, "should be equal")
-		assert.Equal(t, polynomial(int(indices[i])), int(share.share), "should be equal")
+		assert.Contains(t,indices, i)
+		assert.Equal(t, polynomial(i), int(share.Share), "should be equal")
 	}
 }
