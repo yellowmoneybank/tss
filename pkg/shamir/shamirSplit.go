@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+
 	"moritzm-mueller.de/tss/pkg/feldman"
 	"moritzm-mueller.de/tss/pkg/secretSharing"
 
@@ -20,7 +21,6 @@ const (
 	q = 1543
 	g = 5
 )
-
 
 func SplitSecret(secret []byte, shares int, threshold uint8) ([]secretSharing.Share, error) {
 	// TODO: Assertions...
@@ -65,10 +65,11 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]secretSharing.Sh
 	return sharedSecrets, nil
 }
 
-// splits secretByte into shares with threshold. Return a map that maps the indices to the shares
+// splits secretByte into shares with threshold. Return a map that maps the indices to the shares.
 func splitByte(secretByte byte, shares int, threshold uint8) (map[int]secretSharing.ByteShare, error) {
 	// Create Polynomial, the constant term is the secret, the maximum degree is threshold - 1
 	coefficients := []int{int(secretByte)}
+
 	randomCoefficients, err := randomCoefficients(int(threshold - 1))
 	if err != nil {
 		return nil, err
@@ -86,19 +87,21 @@ func splitByte(secretByte byte, shares int, threshold uint8) (map[int]secretShar
 
 	singleByteShares := createByteShares(indices, polynomial)
 
-	// initialize Checkvalues
+	// initialize checkValues
 
 	checkValues := feldman.CalculateCheckValues(g, q, coefficients)
 	// type conversion
-	checkvaluesUint16 := make([]uint16, len(checkValues))
+	var checkValuesUint16 []uint16
 	for _, value := range checkValues {
-		checkvaluesUint16 = append(checkvaluesUint16, uint16(value))
+		checkValuesUint16 = append(checkValuesUint16, uint16(value))
 	}
 
-	for _, byteShare := range singleByteShares {
-
-		copy(byteShare.CheckValues, checkvaluesUint16)
+	for i, byteShare := range singleByteShares {
+		byteShare.CheckValues = make([]uint16, len(checkValuesUint16))
+		copy(byteShare.CheckValues, checkValuesUint16)
+		singleByteShares[i] = byteShare
 	}
+
 	return singleByteShares, nil
 }
 
@@ -131,7 +134,7 @@ func randomCoefficients(number int) ([]int, error) {
 			return nil, err
 		}
 
-		coefficients[i] =  int(coefficient.Int64())
+		coefficients[i] = int(coefficient.Int64())
 	}
 
 	return coefficients, nil
