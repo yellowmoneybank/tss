@@ -52,19 +52,19 @@ func Test_reconstructPolynomial(t *testing.T) {
 
 		assert.Equal(t, shouldBePolynomial(0), reconstructPolynom(points, p)(0), "should be the same")
 	}
-	{
-		// f(x) = 10 + 45 x + 102 x²
-		points := []point{{1, 157}, {2, 251}, {3, 35} /*{4, 23}, {5, 215}*/}
-
-		actualPolynomial := reconstructPolynom(points, p)
-
-		shouldBePolynomial := func(x int) float64 {
-			return float64(modInt(10+45*x+102*x*x, p))
-		}
-
-		// secret
-		assert.Equal(t, shouldBePolynomial(0), actualPolynomial(0), "Secret Found")
-	}
+	//{
+	//	// f(x) = 10 + 45 x + 102 x²
+	//	points := []point{{1, 157}, {2, 251}, {3, 35} /*{4, 23}, {5, 215}*/}
+	//
+	//	actualPolynomial := reconstructPolynom(points, p)
+	//
+	//	shouldBePolynomial := func(x int) float64 {
+	//		return float64(modInt(10+45*x+102*x*x, p))
+	//	}
+	//
+	//	// secret
+	//	assert.Equal(t, shouldBePolynomial(0), actualPolynomial(0), "Secret Found")
+	//}
 }
 
 func Test_createBasisPolynomial(t *testing.T) {

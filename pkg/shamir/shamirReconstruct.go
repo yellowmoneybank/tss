@@ -4,12 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"math"
+
+	"moritzm-mueller.de/tss/pkg/feldman"
 	"moritzm-mueller.de/tss/pkg/secretSharing"
 )
 
 func Reconstruct(shares []secretSharing.Share) ([]byte, error) {
 	// TODO Assertions...
 	var secret []byte
+
+	for _, share := range shares {
+		if !feldman.IsValidShare(share) {
+			return nil, errors.New("share is invalid")
+		}
+	}
 
 	for i := 0; i < len(shares[0].Secrets); i++ {
 		byteShares := make(map[int]secretSharing.ByteShare)
@@ -62,7 +70,7 @@ func isUniqueSolution(byteShares map[int]secretSharing.ByteShare, threshold uint
 	}
 
 	var indices []int
-	for x:= range byteShares {
+	for x := range byteShares {
 		indices = append(indices, x)
 	}
 	// TODO check for all combinations

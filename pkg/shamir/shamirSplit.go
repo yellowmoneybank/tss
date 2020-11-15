@@ -16,10 +16,10 @@ import (
 // g is generator over Z_prime
 // needed for Feldman's VSS.
 const (
-	p = 257
-	//	r     = 6
-	q = 1543
-	g = 5
+	p = 281
+	//	r     = 2
+	q = 563
+	g = 11
 )
 
 func SplitSecret(secret []byte, shares int, threshold uint8) ([]secretSharing.Share, error) {
@@ -76,7 +76,7 @@ func splitByte(secretByte byte, shares int, threshold uint8) (map[int]secretShar
 	}
 
 	coefficients = append(coefficients, randomCoefficients...)
-
+// coefficients := []int{int(secretByte), 222,32}
 	polynomial, err := buildPolynomial(coefficients, p)
 	if err != nil {
 		return nil, err
