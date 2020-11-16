@@ -5,17 +5,24 @@ import (
 	"moritzm-mueller.de/tss/pkg/secretSharing"
 )
 
-type RedistShare secretSharing.Share
+type RedistShare struct {
+	oldIndex     uint16
+	newIndex     uint16
+	newThreshold uint8
+	share        secretSharing.Share
+}
 
-func RedistributeShare(share secretSharing.Share, numberOfNewShares, newThreshold int) []RedistShare {
+func RedistributeShare(share secretSharing.Share, numberOfNewShares, newThreshold int) ([]RedistShare, error) {
 	var redistShares []RedistShare
 
 	splittedShares := make(map[int][]secretSharing.ByteShare)
+
 	for _, secret := range share.Secrets {
 		split, err := redistributeByteShare(secret, share.Prime, share.Q, share.G, numberOfNewShares, newThreshold)
 		if err != nil {
 			return nil, err
 		}
+
 		for index, secret := range split {
 			splittedShares[index] = append(splittedShares[index], secret)
 		}
@@ -23,17 +30,22 @@ func RedistributeShare(share secretSharing.Share, numberOfNewShares, newThreshol
 
 	for index, secrets := range splittedShares {
 		redistShares = append(redistShares, RedistShare{
-			ID:         share.ID,
-			Threshold:  uint8(numberOfNewShares),
-			ShareIndex: uint16(index),
-			Secrets:    secrets,
-			Prime:      share.Prime,
-			Q:          share.Q,
-			G:          share.G,
+			oldIndex:     share.ShareIndex,
+			newIndex:     uint16(index),
+			newThreshold: uint8(newThreshold),
+			share: secretSharing.Share{
+				ID:         share.ID,
+				Threshold:  uint8(newThreshold),
+				ShareIndex: uint16(index),
+				Secrets:    secrets,
+				Prime:      share.Prime,
+				Q:          share.Q,
+				G:          share.G,
+			},
 		})
 	}
 
-	return redistShares
+	return redistShares, nil
 }
 
 func redistributeByteShare(byteshare secretSharing.ByteShare, prime, q, g, shares, threshold int) (map[int]secretSharing.ByteShare, error) {
