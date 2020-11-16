@@ -1,11 +1,7 @@
 package shamir
 
 import (
-	"crypto/rand"
 	"fmt"
-	"math"
-	"math/big"
-
 	"moritzm-mueller.de/tss/pkg/feldman"
 	"moritzm-mueller.de/tss/pkg/secretSharing"
 
@@ -70,20 +66,20 @@ func splitByte(secretByte byte, shares int, threshold uint8) (map[int]secretShar
 	// Create Polynomial, the constant term is the secret, the maximum degree is threshold - 1
 	coefficients := []int{int(secretByte)}
 
-	randomCoefficients, err := randomCoefficients(int(threshold - 1))
+	randomCoefficients, err := secretSharing.RandomCoefficients(int(threshold - 1),p)
 	if err != nil {
 		return nil, err
 	}
 
 	coefficients = append(coefficients, randomCoefficients...)
 // coefficients := []int{int(secretByte), 222,32}
-	polynomial, err := buildPolynomial(coefficients, p)
+	polynomial, err := secretSharing.BuildPolynomial(coefficients, p)
 	if err != nil {
 		return nil, err
 	}
 
 	// initialize indices
-	indices := createIndices(shares)
+	indices := secretSharing.CreateIndices(shares)
 
 	singleByteShares := createByteShares(indices, polynomial)
 
@@ -105,15 +101,6 @@ func splitByte(secretByte byte, shares int, threshold uint8) (map[int]secretShar
 	return singleByteShares, nil
 }
 
-func createIndices(indexCount int) []int {
-	var indices []int
-	for i := 1; i <= indexCount; i++ {
-		indices = append(indices, i)
-	}
-
-	return indices
-}
-
 func createByteShares(indices []int, polynomial func(x int) int) map[int]secretSharing.ByteShare {
 	singleByteShares := make(map[int]secretSharing.ByteShare)
 	for _, index := range indices {
@@ -126,30 +113,3 @@ func createByteShares(indices []int, polynomial func(x int) int) map[int]secretS
 	return singleByteShares
 }
 
-func randomCoefficients(number int) ([]int, error) {
-	coefficients := make([]int, number)
-	for i := 0; i < number; i++ {
-		coefficient, err := rand.Int(rand.Reader, big.NewInt(p))
-		if err != nil {
-			return nil, err
-		}
-
-		coefficients[i] = int(coefficient.Int64())
-	}
-
-	return coefficients, nil
-}
-
-// Builds a polynomial function with given coefficients, and degree len(coefficients) + 1.
-func buildPolynomial(coefficients []int, modulo int) (func(x int) int, error) {
-	f := func(x int) int {
-		sum := 0
-		for i, coefficient := range coefficients {
-			sum += coefficient * int(math.Pow(float64(x), float64(i)))
-		}
-
-		return sum % modulo
-	}
-
-	return f, nil
-}

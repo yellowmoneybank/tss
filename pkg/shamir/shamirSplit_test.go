@@ -1,6 +1,7 @@
 package shamir
 
 import (
+	"moritzm-mueller.de/tss/pkg/secretSharing"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,7 +35,7 @@ func TestSplitSecret(t *testing.T) {
 }
 
 func Test_buildPolynomial(t *testing.T) {
-	poly, _ := buildPolynomial([]int{10, 45, 102}, p)
+	poly, _ := secretSharing.BuildPolynomial([]int{10, 45, 102}, p)
 
 	shouldBePolynomial := func(x int) int {
 		return (10 + 45*x + 102*x*x) % p
