@@ -23,16 +23,17 @@ func Reconstruct(redistShares []RedistShare) (secretSharing.Share, error) {
 		G:          redistShares[0].share.G,
 	}
 
-	for i := 0; i < len(redistShares[0].share.secrets); i++ {
+	for i := 0; i < len(redistShares[0].share.Secrets); i++ {
 		// build points
 		var points []secretSharing.Point
 
 		for j := 0; j < len(redistShares); j++ {
-			points := append(points, secretSharing.Point{
+			points = append(points, secretSharing.Point{
 				X: int(redistShares[j].oldIndex),
 				Y: int(redistShares[j].share.Secrets[i].Share),
 			})
 		}
+
 		p := secretSharing.ReconstructPolynom(points, redistShares[0].share.Prime)
 
 		secret := p(0)
@@ -40,13 +41,14 @@ func Reconstruct(redistShares []RedistShare) (secretSharing.Share, error) {
 		if secret != float64(int(secret)) {
 			fmt.Println("Houston, we have a problem")
 		}
+
 		reconstructedShare.Secrets = append(reconstructedShare.Secrets, secretSharing.ByteShare{
 			Share: uint16(secret),
 			// TODO
 			CheckValues: []uint16{},
 		})
-
 	}
+
 	return reconstructedShare, nil
 }
 
@@ -56,20 +58,25 @@ func contains(slice []uint16, element uint16) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
 func sanityCheck(redistShares []RedistShare) error {
 	// check, that all shares have a different old index and the same new index
 	newIndex := redistShares[0].newIndex
+
 	var oldIndex []uint16
+
 	for _, redistShare := range redistShares {
 		if redistShare.newIndex != newIndex {
 			return errors.New("redistShares do not have the same new index")
 		}
+
 		if contains(oldIndex, redistShare.oldIndex) {
 			return errors.New("redistShares do not have a unique oldIndex")
 		}
+
 		oldIndex = append(oldIndex, redistShare.oldIndex)
 	}
 
@@ -80,5 +87,6 @@ func sanityCheck(redistShares []RedistShare) error {
 			return errors.New("redistShares do not have the same size")
 		}
 	}
+
 	return nil
 }
