@@ -4,19 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	//"moritzm-mueller.de/tss/pkg/feldman"
 	"moritzm-mueller.de/tss/pkg/secretSharing"
 )
 
 func Reconstruct(shares []secretSharing.Share) ([]byte, error) {
 	// TODO Assertions...
 	var secret []byte
-
-	// for _, share := range shares {
-	// 	if !feldman.IsValidShare(share) {
-	// 		return nil, errors.New("share is invalid")
-	// 	}
-	// }
 
 	for i := 0; i < len(shares[0].Secrets); i++ {
 		byteShares := make(map[int]secretSharing.ByteShare)
@@ -31,7 +24,7 @@ func Reconstruct(shares []secretSharing.Share) ([]byte, error) {
 
 		secret = append(secret, reconstructedByte)
 
-		fmt.Printf("reconstructed: %d \r", i)
+		// fmt.Printf("reconstructed: %d \r", i)
 	}
 
 	return secret, nil

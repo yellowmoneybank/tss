@@ -8,6 +8,13 @@ import (
 	"github.com/google/uuid"
 )
 
+type RedistShare struct {
+	OldIndex     uint16
+	NewIndex     uint16
+	NewThreshold uint8
+	Share        Share
+}
+
 type Share struct {
 	ID          uuid.UUID
 	Threshold   uint8
@@ -18,6 +25,8 @@ type Share struct {
 
 type ByteShare struct {
 	Share uint16
+	// G^s
+	GS uint16
 	// at contains g^s, g^a_1 ... for Feldman's VSS
 	CheckValues []uint16
 }

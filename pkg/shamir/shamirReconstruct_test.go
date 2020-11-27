@@ -18,9 +18,8 @@ func Test_ShamirReconstruct(t *testing.T) {
 
 	{
 		secret, _ := ioutil.ReadFile("./sample.txt")
-		splits, _ := SplitSecret(secret, 5, 3)
+		splits, _ := SplitSecret(secret, 20, 10)
 		reconstruct, _ := Reconstruct(splits)
 		assert.Equal(t, secret, reconstruct)
 	}
 }
-

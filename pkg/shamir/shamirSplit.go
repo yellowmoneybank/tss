@@ -1,7 +1,6 @@
 package shamir
 
 import (
-	"fmt"
 	"moritzm-mueller.de/tss/pkg/feldman"
 	"moritzm-mueller.de/tss/pkg/secretSharing"
 
@@ -27,7 +26,7 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]secretSharing.Sh
 	// index => byteShares
 	secretSharesMap := make(map[uint16][]secretSharing.ByteShare)
 
-	for i, secretByte := range secret {
+	for _, secretByte := range secret {
 		byteShares, err := splitByte(secretByte, shares, threshold)
 		if err != nil {
 			return nil, err
@@ -40,7 +39,7 @@ func SplitSecret(secret []byte, shares int, threshold uint8) ([]secretSharing.Sh
 			secretSharesMap[uint16(index)] = shares
 		}
 
-		fmt.Printf("splitted: %d \r", i)
+		// fmt.Printf("splitted: %d \r", i)
 	}
 
 	// all Shares have the same UUID
@@ -66,13 +65,13 @@ func splitByte(secretByte byte, shares int, threshold uint8) (map[int]secretShar
 	// Create Polynomial, the constant term is the secret, the maximum degree is threshold - 1
 	coefficients := []int{int(secretByte)}
 
-	randomCoefficients, err := secretSharing.RandomCoefficients(int(threshold - 1),p)
+	randomCoefficients, err := secretSharing.RandomCoefficients(int(threshold-1), p)
 	if err != nil {
 		return nil, err
 	}
 
 	coefficients = append(coefficients, randomCoefficients...)
-// coefficients := []int{int(secretByte), 222,32}
+	// coefficients := []int{int(secretByte), 222,32}
 	polynomial, err := secretSharing.BuildPolynomial(coefficients, p)
 	if err != nil {
 		return nil, err
@@ -83,8 +82,7 @@ func splitByte(secretByte byte, shares int, threshold uint8) (map[int]secretShar
 
 	singleByteShares := createByteShares(indices, polynomial)
 
-	// initialize checkValues
-
+	// initialize checkValues for Feldman
 	checkValues := feldman.CalculateCheckValues(g, q, coefficients)
 	// type conversion
 	var checkValuesUint16 []uint16
@@ -95,6 +93,8 @@ func splitByte(secretByte byte, shares int, threshold uint8) (map[int]secretShar
 	for i, byteShare := range singleByteShares {
 		byteShare.CheckValues = make([]uint16, len(checkValuesUint16))
 		copy(byteShare.CheckValues, checkValuesUint16)
+		// Checkvalue for  VSR
+		byteShare.GS = checkValuesUint16[0]
 		singleByteShares[i] = byteShare
 	}
 
@@ -112,4 +112,3 @@ func createByteShares(indices []int, polynomial func(x int) int) map[int]secretS
 
 	return singleByteShares
 }
-

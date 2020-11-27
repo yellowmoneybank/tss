@@ -1,10 +1,10 @@
 package shamir
 
 import (
-	"moritzm-mueller.de/tss/pkg/secretSharing"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"moritzm-mueller.de/tss/pkg/secretSharing"
 )
 
 func TestSplitSecret(t *testing.T) {
@@ -24,12 +24,22 @@ func TestSplitSecret(t *testing.T) {
 		}
 
 		for _, share := range shares {
-			assert.Equal(t, threshold, share.Threshold, "Al Shares should have the same threshold")
+			assert.Equal(t, threshold, share.Threshold, "All Shares should have the same threshold")
 		}
 
 		lenShare := len(shares[0].Secrets)
 		for _, share := range shares {
 			assert.Equal(t, lenShare, len(share.Secrets), "All shares should have the same length")
+		}
+
+		for _, share := range shares {
+			for _, sharedByte := range share.Secrets {
+				assert.NotEmpty(t, sharedByte.GS)
+			}
+			for _, sharedByte := range share.Secrets {
+				assert.Equal(t, len(sharedByte.CheckValues), int(share.Threshold),
+					"There number of Checkvalues and Threshold should be the same")
+			}
 		}
 	}
 }
@@ -49,7 +59,7 @@ func Test_buildPolynomial(t *testing.T) {
 func Test_createByteShares(t *testing.T) {
 	var indices []int
 	for i := 1; i <= 5; i++ {
-		indices = append(indices,i)
+		indices = append(indices, i)
 	}
 
 	polynomial := func(x int) int {
@@ -59,7 +69,7 @@ func Test_createByteShares(t *testing.T) {
 	byteShares := createByteShares(indices, polynomial)
 
 	for i, share := range byteShares {
-		assert.Contains(t,indices, i)
+		assert.Contains(t, indices, i)
 		assert.Equal(t, polynomial(i), int(share.Share), "should be equal")
 	}
 }

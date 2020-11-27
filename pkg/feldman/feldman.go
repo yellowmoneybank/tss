@@ -9,7 +9,7 @@ import (
 func IsValidShare(share secretSharing.Share) bool {
 	for i, secret := range share.Secrets {
 		if !isValidSecret(secret, share.G, share.Q, int(share.ShareIndex)) {
-			println("secret",i," is false")
+			println("secret", i, " is false")
 			return false
 		}
 	}

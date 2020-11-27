@@ -5,15 +5,8 @@ import (
 	"moritzm-mueller.de/tss/pkg/secretSharing"
 )
 
-type RedistShare struct {
-	oldIndex     uint16
-	newIndex     uint16
-	newThreshold uint8
-	share        secretSharing.Share
-}
-
-func RedistributeShare(share secretSharing.Share, numberOfNewShares, newThreshold int) ([]RedistShare, error) {
-	var redistShares []RedistShare
+func RedistributeShare(share secretSharing.Share, numberOfNewShares, newThreshold int) ([]secretSharing.RedistShare, error) {
+	var redistShares []secretSharing.RedistShare
 
 	splittedShares := make(map[int][]secretSharing.ByteShare)
 
@@ -29,11 +22,11 @@ func RedistributeShare(share secretSharing.Share, numberOfNewShares, newThreshol
 	}
 
 	for index, secrets := range splittedShares {
-		redistShares = append(redistShares, RedistShare{
-			oldIndex:     share.ShareIndex,
-			newIndex:     uint16(index),
-			newThreshold: uint8(newThreshold),
-			share: secretSharing.Share{
+		redistShares = append(redistShares, secretSharing.RedistShare{
+			OldIndex:     share.ShareIndex,
+			NewIndex:     uint16(index),
+			NewThreshold: uint8(newThreshold),
+			Share: secretSharing.Share{
 				ID:         share.ID,
 				Threshold:  uint8(newThreshold),
 				ShareIndex: uint16(index),
@@ -77,6 +70,7 @@ func redistributeByteShare(byteshare secretSharing.ByteShare, prime, q, g, share
 	for _, index := range indices {
 		newShares[index] = secretSharing.ByteShare{
 			Share:       uint16(polynomial(index)),
+			GS:          byteshare.GS,
 			CheckValues: checkValuesUint16,
 		}
 	}
