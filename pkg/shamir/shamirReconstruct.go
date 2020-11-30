@@ -2,14 +2,19 @@ package shamir
 
 import (
 	"errors"
-	"fmt"
 
+	// "moritzm-mueller.de/tss/pkg/feldman"
 	"moritzm-mueller.de/tss/pkg/secretSharing"
 )
 
 func Reconstruct(shares []secretSharing.Share) ([]byte, error) {
 	// TODO Assertions...
 	var secret []byte
+
+	// Feldman's VSS impacts performance heavily
+	// for _, share := range shares {
+	// 	feldman.IsValidShare(share)
+	//}
 
 	for i := 0; i < len(shares[0].Secrets); i++ {
 		byteShares := make(map[int]secretSharing.ByteShare)
@@ -23,8 +28,6 @@ func Reconstruct(shares []secretSharing.Share) ([]byte, error) {
 		}
 
 		secret = append(secret, reconstructedByte)
-
-		// fmt.Printf("reconstructed: %d \r", i)
 	}
 
 	return secret, nil
@@ -44,10 +47,6 @@ func reconstructByte(byteShares map[int]secretSharing.ByteShare, threshold uint8
 	p := secretSharing.ReconstructPolynom(points, prime)
 
 	secret := p(0)
-
-	if secret != float64(int(secret)) {
-		fmt.Println("We have a Problem")
-	}
 
 	return byte(secret), nil
 }

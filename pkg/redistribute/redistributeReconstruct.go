@@ -14,7 +14,7 @@ func Reconstruct(redistShares []secretSharing.RedistShare) (secretSharing.Share,
 		return secretSharing.Share{}, err
 	}
 	if vsr.ValidVSRShare(redistShares) == false {
-		// 	// //	return secretSharing.Share{}, errors.New("not a valid VSRShare")
+		// return secretSharing.Share{}, errors.New("not a valid VSRShare")
 	}
 
 	reconstructedShare := secretSharing.Share{

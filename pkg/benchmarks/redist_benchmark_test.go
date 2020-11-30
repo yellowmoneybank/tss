@@ -502,11 +502,113 @@ func BenchmarkRedistReconstructSharesThreshold7(b *testing.B) {
 	}
 }
 
-func BenchmarkRedistReconstructSharesThreshold8(b *testing.B) {
-	threshold_old := 2
-	shares_old := 5
+// func BenchmarkRedistReconstructSharesThreshold8(b *testing.B) {
+// 	threshold_old := 2
+// 	shares_old := 5
 
-	threshold_new := 8
+// 	threshold_new := 8
+// 	shares_new := 10
+
+// 	size := 10
+// 	secret := make([]byte, size)
+// 	initialize(secret)
+
+// 	splits, _ := shamir.SplitSecret(secret, shares_old, uint8(threshold_old))
+
+// 	var redistShares [][]secretSharing.RedistShare
+
+// 	for _, split := range splits {
+// 		redist, err := redistribute.RedistributeShare(split, shares_new, threshold_new)
+// 		if err != nil {
+// 			println(err)
+// 		}
+
+// 		redistShares = append(redistShares, redist)
+// 	}
+
+// 	b.ResetTimer()
+
+// 	for i := 0; i < b.N; i++ {
+// 		_, err := redistribute.RedistSharesToShareholders(redistShares)
+// 		if err != nil {
+// 			println(err)
+// 		}
+// 	}
+// }
+
+// func BenchmarkRedistReconstructSharesThreshold9(b *testing.B) {
+// 	threshold_old := 2
+// 	shares_old := 5
+
+// 	threshold_new := 9
+// 	shares_new := 10
+
+// 	size := 10
+// 	secret := make([]byte, size)
+// 	initialize(secret)
+
+// 	splits, _ := shamir.SplitSecret(secret, shares_old, uint8(threshold_old))
+
+// 	var redistShares [][]secretSharing.RedistShare
+
+// 	for _, split := range splits {
+// 		redist, err := redistribute.RedistributeShare(split, shares_new, threshold_new)
+// 		if err != nil {
+// 			println(err)
+// 		}
+
+// 		redistShares = append(redistShares, redist)
+// 	}
+
+// 	b.ResetTimer()
+
+// 	for i := 0; i < b.N; i++ {
+// 		_, err := redistribute.RedistSharesToShareholders(redistShares)
+// 		if err != nil {
+// 			println(err)
+// 		}
+// 	}
+// }
+
+// func BenchmarkRedistReconstructSharesThreshold10(b *testing.B) {
+// 	threshold_old := 2
+// 	shares_old := 5
+
+// 	threshold_new := 10
+// 	shares_new := 10
+
+// 	size := 10
+// 	secret := make([]byte, size)
+// 	initialize(secret)
+
+// 	splits, _ := shamir.SplitSecret(secret, shares_old, uint8(threshold_old))
+
+// 	var redistShares [][]secretSharing.RedistShare
+
+// 	for _, split := range splits {
+// 		redist, err := redistribute.RedistributeShare(split, shares_new, threshold_new)
+// 		if err != nil {
+// 			println(err)
+// 		}
+
+// 		redistShares = append(redistShares, redist)
+// 	}
+
+// 	b.ResetTimer()
+
+// 	for i := 0; i < b.N; i++ {
+// 		_, err := redistribute.RedistSharesToShareholders(redistShares)
+// 		if err != nil {
+// 			println(err)
+// 		}
+// 	}
+// }
+
+func BenchmarkRedistReconstructSharesOldThreshold2(b *testing.B) {
+	threshold_old := 2
+	shares_old := 2
+
+	threshold_new := 10
 	shares_new := 10
 
 	size := 10
@@ -536,11 +638,11 @@ func BenchmarkRedistReconstructSharesThreshold8(b *testing.B) {
 	}
 }
 
-func BenchmarkRedistReconstructSharesThreshold9(b *testing.B) {
-	threshold_old := 2
+func BenchmarkRedistReconstructSharesOldThreshold5(b *testing.B) {
+	threshold_old := 5
 	shares_old := 5
 
-	threshold_new := 9
+	threshold_new := 10
 	shares_new := 10
 
 	size := 10
@@ -570,9 +672,77 @@ func BenchmarkRedistReconstructSharesThreshold9(b *testing.B) {
 	}
 }
 
-func BenchmarkRedistReconstructSharesThreshold10(b *testing.B) {
-	threshold_old := 2
-	shares_old := 5
+func BenchmarkRedistReconstructSharesOldThreshold10(b *testing.B) {
+	threshold_old := 10
+	shares_old := 10
+
+	threshold_new := 10
+	shares_new := 10
+
+	size := 10
+	secret := make([]byte, size)
+	initialize(secret)
+
+	splits, _ := shamir.SplitSecret(secret, shares_old, uint8(threshold_old))
+
+	var redistShares [][]secretSharing.RedistShare
+
+	for _, split := range splits {
+		redist, err := redistribute.RedistributeShare(split, shares_new, threshold_new)
+		if err != nil {
+			println(err)
+		}
+
+		redistShares = append(redistShares, redist)
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, err := redistribute.RedistSharesToShareholders(redistShares)
+		if err != nil {
+			println(err)
+		}
+	}
+}
+
+func BenchmarkRedistReconstructSharesOldThreshold15(b *testing.B) {
+	threshold_old := 15
+	shares_old := 15
+
+	threshold_new := 10
+	shares_new := 10
+
+	size := 10
+	secret := make([]byte, size)
+	initialize(secret)
+
+	splits, _ := shamir.SplitSecret(secret, shares_old, uint8(threshold_old))
+
+	var redistShares [][]secretSharing.RedistShare
+
+	for _, split := range splits {
+		redist, err := redistribute.RedistributeShare(split, shares_new, threshold_new)
+		if err != nil {
+			println(err)
+		}
+
+		redistShares = append(redistShares, redist)
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, err := redistribute.RedistSharesToShareholders(redistShares)
+		if err != nil {
+			println(err)
+		}
+	}
+}
+
+func BenchmarkRedistReconstructSharesOldThreshold20(b *testing.B) {
+	threshold_old := 20
+	shares_old := 20
 
 	threshold_new := 10
 	shares_new := 10

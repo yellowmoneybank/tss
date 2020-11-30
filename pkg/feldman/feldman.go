@@ -29,8 +29,10 @@ func isValidSecret(secret secretSharing.ByteShare, generator int, q int, index i
 
 		ga := big.NewInt(int64(secret.CheckValues[i]))
 		ga.Exp(ga, exp, nil)
+		ga.Mod(ga, big.NewInt(int64(q)))
 
 		product.Mul(product, ga)
+		ga.Mod(ga, big.NewInt(int64(q)))
 	}
 
 	product.Mod(product, big.NewInt(int64(q)))

@@ -13,12 +13,12 @@ func TestReconstruct(t *testing.T) {
 	{
 		secret := []byte{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10}
 
-		splits, _ := shamir.SplitSecret(secret, 5, 2)
+		splits, _ := shamir.SplitSecret(secret, 3, 2)
 
 		var redistShares [][]secretSharing.RedistShare
 
 		for _, split := range splits {
-			redist, err := RedistributeShare(split, 10, 4)
+			redist, err := RedistributeShare(split, 4, 3)
 			if err != nil {
 				println(err)
 			}
@@ -29,6 +29,7 @@ func TestReconstruct(t *testing.T) {
 		newShareholders, err := RedistSharesToShareholders(redistShares[0:2])
 		if err != nil {
 			println(err)
+			println("test")
 			return
 		}
 

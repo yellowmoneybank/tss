@@ -1,50 +1,23 @@
 goos: linux
 goarch: amd64
 pkg: moritzm-mueller.de/tss/pkg/benchmarks
-BenchmarkRedistBase-8                            	     996	   1099336 ns/op
-BenchmarkRedistReconstruct-8                     	    2448	    475306 ns/op
-BenchmarkRedistReconstructShares10-8             	    1645	    672282 ns/op
-BenchmarkRedistReconstructShares100-8            	     163	   7370932 ns/op
-BenchmarkRedistReconstructShares300-8            	      55	  22010787 ns/op
-BenchmarkRedistReconstructShares500-8            	      32	  35571579 ns/op
-BenchmarkRedistReconstructShares800-8            	      20	  56845601 ns/op
-BenchmarkRedistReconstructShares1000-8           	      16	  69951579 ns/op
-BenchmarkRedistReconstructSharesThreshold1-8     	    1410	    813615 ns/op
-BenchmarkRedistReconstructSharesThreshold20-8    	    1410	    863452 ns/op
-BenchmarkRedistReconstructSharesThreshold30-8    	    1392	    849942 ns/op
-BenchmarkRedistReconstructSharesThreshold40-8    	    1320	    856260 ns/op
-BenchmarkRedistReconstructSharesThreshold50-8    	    1417	    885610 ns/op
-BenchmarkRedistReconstructSharesThreshold60-8    	    1401	    857739 ns/op
-BenchmarkRedistReconstructSharesThreshold70-8    	    1383	    879212 ns/op
-BenchmarkRedistReconstructSharesThreshold80-8    	    1372	    884326 ns/op
-BenchmarkRedistReconstructSharesThreshold90-8    	    1435	    866877 ns/op
-BenchmarkRedistReconstructSharesThreshold100-8   	    1407	    876453 ns/op
-BenchmarkRestoreThreshold1-8                     	    1809	    635273 ns/op
-BenchmarkRestoreThreshold5-8                     	    1724	    675270 ns/op
-BenchmarkRestoreThreshold10-8                    	    1795	    655302 ns/op
-BenchmarkRestoreThreshold15-8                    	    1833	    660370 ns/op
-BenchmarkRestoreShare1-8                         	   39648	     31336 ns/op
-BenchmarkRestoreShare10-8                        	    4873	    244990 ns/op
-BenchmarkRestoreShare20-8                        	    1857	    646140 ns/op
-BenchmarkSplitSecretThreshold1-8                 	     432	   2886839 ns/op
-BenchmarkSplitSecretThreshold10-8                	     122	   9912145 ns/op
-BenchmarkSplitSecretThreshold20-8                	      63	  18747745 ns/op
-BenchmarkSplitSecretThreshold40-8                	      27	  42274829 ns/op
-BenchmarkSplitSecretThreshold60-8                	      18	  66023523 ns/op
-BenchmarkSplitSecretThreshold80-8                	      13	  91175866 ns/op
-BenchmarkSplitSecretThreshold100-8               	       9	 115825601 ns/op
-BenchmarkSplitSecret1MB-8                        	       1	11865072223 ns/op
-BenchmarkSplitSecretBytes1-8                     	   87658	     13418 ns/op
-BenchmarkSplitSecretBytes10-8                    	   10000	    110360 ns/op
-BenchmarkSplitSecretBytes100-8                   	    1149	   1066954 ns/op
-BenchmarkSplitSecretBytes500-8                   	     228	   5291275 ns/op
-BenchmarkSplitSecretBytes1000-8                  	     100	  10546832 ns/op
-BenchmarkSplitShares5-8                          	    1122	   1060469 ns/op
-BenchmarkSplitShares10-8                         	     988	   1257860 ns/op
-BenchmarkSplitShares100-8                        	     277	   4226891 ns/op
-BenchmarkSplitShares300-8                        	     100	  11389117 ns/op
-BenchmarkSplitShares500-8                        	      61	  19140072 ns/op
-BenchmarkSplitShares800-8                        	      42	  27961889 ns/op
-BenchmarkSplitShares1000-8                       	      30	  38566342 ns/op
-PASS
-ok  	moritzm-mueller.de/tss/pkg/benchmarks	72.127s
+BenchmarkRestoreThreshold1-8    	     325	   3652487 ns/op
+BenchmarkRestoreThreshold2-8    	     166	   6872302 ns/op
+BenchmarkRestoreThreshold3-8    	     100	  10374152 ns/op
+BenchmarkRestoreThreshold4-8    	     100	  11948686 ns/op
+BenchmarkRestoreThreshold5-8    	      75	  14587840 ns/op
+BenchmarkRestoreThreshold6-8    	      74	  16153573 ns/op
+BenchmarkRestoreThreshold7-8    	      70	  17776472 ns/op
+BenchmarkRestoreThreshold8-8    	      64	  19201845 ns/op
+BenchmarkRestoreThreshold9-8    	      38	  32322947 ns/op
+BenchmarkRestoreThreshold10-8   	      33	  34785148 ns/op
+BenchmarkRestoreThreshold11-8   	      30	  38678947 ns/op
+BenchmarkRestoreThreshold12-8   	      28	  42495269 ns/op
+BenchmarkRestoreThreshold13-8   	      25	  44813104 ns/op
+BenchmarkRestoreThreshold14-8   	      19	  65069993 ns/op
+BenchmarkRestoreShare1KB-8      	    1585	    789513 ns/op
+BenchmarkRestoreShare100KB-8    	      14	  83920862 ns/op
+BenchmarkRestoreShare500KB-8    	       3	 417860546 ns/op
+BenchmarkRestoreShare1MB-8      	       2	 831094006 ns/op
+signal: killed
+FAIL	moritzm-mueller.de/tss/pkg/benchmarks	594.957s

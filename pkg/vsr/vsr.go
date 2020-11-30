@@ -4,16 +4,15 @@ import (
 	"math"
 	"math/big"
 
-	"moritzm-mueller.de/tss/pkg/feldman"
 	"moritzm-mueller.de/tss/pkg/secretSharing"
 )
 
 func ValidVSRShare(shares []secretSharing.RedistShare) bool {
-	for _, share := range shares {
-		if !feldman.IsValidShare(share.Share) {
-			return false
-		}
-	}
+	// for _, share := range shares {
+	// 	if !feldman.IsValidShare(share.Share) {
+	// 		return false
+	// 	}
+	// }
 
 	for i := 0; i < len(shares[0].Share.Secrets); i++ {
 		// index -> g^s_i
@@ -41,6 +40,8 @@ func vsrCheck(gs uint16, checkValues map[uint16]uint16, q int) bool {
 	for i, checkvalue := range checkValues {
 		exp, exact := exponents[i].Float64()
 		if !exact {
+			println("Error converting")
+
 			return false
 		}
 
