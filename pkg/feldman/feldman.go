@@ -10,6 +10,7 @@ func IsValidShare(share secretSharing.Share) bool {
 	for i, secret := range share.Secrets {
 		if !isValidSecret(secret, share.G, share.Q, int(share.ShareIndex)) {
 			println("secret", i, " is false")
+
 			return false
 		}
 	}
@@ -37,6 +38,7 @@ func isValidSecret(secret secretSharing.ByteShare, generator int, q int, index i
 
 	product.Mod(product, big.NewInt(int64(q)))
 	x := product.Cmp(g)
+
 	return x == 0
 }
 

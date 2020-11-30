@@ -1,7 +1,7 @@
 This is the implementation of an Online Wallet using Threshold Secret Sharing.
 
 ./cmd: 
-    - Here is the Api of the wallet implemented. This is not too interesting.
+    - Here is the API of the wallet implemented. This is not too interesting.
     - A dealer and a shareholder can compiled with the following command:
 	```bash
 	go build -o dealer cmd/dealer/main.go && go build -o shareholder cmd/shareholder/main.go

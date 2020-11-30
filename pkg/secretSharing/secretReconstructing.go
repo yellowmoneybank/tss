@@ -19,7 +19,7 @@ func IsUniqueSolution(byteShares map[int]ByteShare, threshold uint8) bool {
 	for x := range byteShares {
 		indices = append(indices, x)
 	}
-	// TODO check for all combinations
+
 	return !isDeterminantVandermondeZero(indices[:threshold])
 }
 

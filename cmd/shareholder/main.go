@@ -31,12 +31,15 @@ func main() {
 	})
 	api.HandleFunc("/share", storeShare).Methods(http.MethodPost)
 	api.HandleFunc("/share/{uuid}", getShare).Methods(http.MethodGet)
-	api.HandleFunc("/share/{uuid}/redistribute", redistributeShare).Methods(http.MethodGet)
-	api.HandleFunc("/redistshare/{uuid}", restoreRedistributeShare).Methods(http.MethodPost)
-	log.Fatalln(http.ListenAndServe(":8081", r))
-}
 
-func redistributeShare(w http.ResponseWriter, r *http.Request) {
+	// These are hard to implement in an meaningful way without knowing the
+	// concrete infrastructure the wallet will run on. The get some insight
+	// into how the redistribution process works, refer to the benchmarks
+	// and the unit tests.
+
+	// api.HandleFunc("/share/{uuid}/redistribute", redistributeShare).Methods(http.MethodGet)
+	// api.HandleFunc("/redistshare/{uuid}", restoreRedistributeShare).Methods(http.MethodPost)
+	log.Fatalln(http.ListenAndServe(":8081", r))
 }
 
 func getShare(w http.ResponseWriter, r *http.Request) {
@@ -114,7 +117,4 @@ func storeShare(w http.ResponseWriter, r *http.Request) {
 	_, err = f.Write(s)
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func restoreRedistributeShare(w http.ResponseWriter, r *http.Request) {
 }

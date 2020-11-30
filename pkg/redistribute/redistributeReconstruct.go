@@ -13,9 +13,13 @@ func Reconstruct(redistShares []secretSharing.RedistShare) (secretSharing.Share,
 	if err != nil {
 		return secretSharing.Share{}, err
 	}
-	if vsr.ValidVSRShare(redistShares) == false {
-		// return secretSharing.Share{}, errors.New("not a valid VSRShare")
-	}
+
+	// uncomment, if validation of the shares is required. This is very
+	// computation intensive though!
+
+	// if vsr.ValidVSRShare(redistShares) == false {
+	// 	 return secretSharing.Share{}, errors.New("not a valid VSRShare")
+	//}
 
 	reconstructedShare := secretSharing.Share{
 		ID:         [16]byte{},

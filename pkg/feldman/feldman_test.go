@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"moritzm-mueller.de/tss/pkg/secretSharing"
-	//	"io/ioutil"
-	// "reflect"
 
 	"github.com/stretchr/testify/assert"
 )

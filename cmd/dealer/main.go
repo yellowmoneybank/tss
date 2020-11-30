@@ -19,6 +19,8 @@ var SHAREHOLDERS = []string{
 	// "localhost:8082",
 	// "localhost:8083",
 }
+
+// addjust the threshold accordingly
 var THRESHOLD = 1
 
 func main() {
@@ -87,6 +89,7 @@ func getSecret(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(`{"error": "not found"}`))
+
 		return
 	}
 

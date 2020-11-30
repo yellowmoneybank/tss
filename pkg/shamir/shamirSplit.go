@@ -2,6 +2,7 @@ package shamir
 
 import (
 	"moritzm-mueller.de/tss/pkg/feldman"
+
 	"moritzm-mueller.de/tss/pkg/secretSharing"
 
 	"github.com/google/uuid"
@@ -18,8 +19,6 @@ const (
 )
 
 func SplitSecret(secret []byte, shares int, threshold uint8) ([]secretSharing.Share, error) {
-	// TODO: Assertions...
-
 	var sharedSecrets []secretSharing.Share
 
 	// Split every secretByte, every index has multiple byteShares

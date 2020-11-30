@@ -4,11 +4,15 @@ import (
 	"crypto/sha256"
 	"math/big"
 
+	"moritzm-mueller.de/tss/pkg/secretSharing"
 	"moritzm-mueller.de/tss/pkg/shamir"
 )
 
-// returns the uuid of the cheater-shares. If the returning slice is nil, all shares are consistent.
-func IsConsistent(shares []shamir.Share, t AntiCheat) []int {
+// returns the uuid of the cheater-shares. If the returning slice is nil, all
+// shares are consistent. This is the implementation of Herzberg et al. This
+// does not work with the redistribution system used, so this algorithm is currently
+// not in use
+func IsConsistent(shares []secretSharing.Share, t AntiCheat) []int {
 	prime := (new(big.Int)).Set(&t.P)
 
 	hashes := calcHashes(shares)
@@ -54,7 +58,7 @@ func calcTNew(prime *big.Int, hashes map[int]big.Int) *big.Int {
 	return tNew
 }
 
-func calcHashes(shares []shamir.Share) map[int]big.Int {
+func calcHashes(shares []secretSharing.Share) map[int]big.Int {
 	hashes := make(map[int]big.Int)
 
 	for _, share := range shares {

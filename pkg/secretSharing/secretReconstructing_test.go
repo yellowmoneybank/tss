@@ -1,11 +1,13 @@
 package secretSharing
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const p = 281
+
 func Test_isDeterminantVandermondeZero(t *testing.T) {
 	{
 		indices := []int{1, 3, 52, 7, 9, -10}
@@ -26,13 +28,13 @@ func Test_reconstructPolynomial(t *testing.T) {
 		}
 
 		for i := 1; i < 20; i++ {
-			points = append(points,Point{
+			points = append(points, Point{
 				X: i,
 				Y: int(shouldBePolynomial(i)),
 			})
 		}
 
-		assert.Equal(t, shouldBePolynomial(0),ReconstructPolynom(points, p)(0), "should be the same")
+		assert.Equal(t, shouldBePolynomial(0), ReconstructPolynom(points, p)(0), "should be the same")
 	}
 	//{
 	//	// f(x) = 10 + 45 x + 102 x²
@@ -53,7 +55,7 @@ func Test_createBasisPolynomial(t *testing.T) {
 	{ // x^2
 		var points []Point
 		for i := 1; i < 4; i++ {
-			points = append(points,Point{
+			points = append(points, Point{
 				X: i,
 				Y: i * i,
 			})
@@ -69,10 +71,10 @@ func Test_createBasisPolynomial(t *testing.T) {
 	{ // f(x) = 10 + 45 x + 102 x²
 		points := []Point{{1, 157}, {2, 251}, {3, 35} /*{4, 23}, {5, 215}*/}
 
-		basisPolynomial :=createBasisPolynomial(points, 0, p)
+		basisPolynomial := createBasisPolynomial(points, 0, p)
 		assert.Equal(t, ModFloat(float64(3), float64(p)), basisPolynomial(0))
 
-		basisPolynomial =createBasisPolynomial(points, 1, p)
+		basisPolynomial = createBasisPolynomial(points, 1, p)
 		assert.Equal(t, ModFloat(float64(-3), float64(p)), basisPolynomial(0))
 
 		basisPolynomial = createBasisPolynomial(points, 2, p)
